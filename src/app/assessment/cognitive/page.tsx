@@ -8,13 +8,127 @@ import { getInitialState, saveState } from '@/lib/assessment';
 import { DiagnosticResponse } from '@/lib/types';
 import { supabase } from '@/lib/supabase';
 
-const LIKERT_OPTIONS = [
-  { value: 1, label: 'Strongly Disagree' },
-  { value: 2, label: 'Disagree' },
-  { value: 3, label: 'Neutral' },
-  { value: 4, label: 'Agree' },
-  { value: 5, label: 'Strongly Agree' },
-];
+import {
+  Atmosphere,
+  GradientFade,
+  CardFrame,
+  ProgressIndicator,
+  GemIcon,
+  ARCANE_COLORS,
+} from '@/components/ui/arcane';
+
+const DIMENSION_LABELS: Record<string, { name: string; description: string }> = {
+  calibration: { name: 'Calibration', description: 'Self-Monitoring' },
+  tolerance: { name: 'Tolerance', description: 'Productive Struggle' },
+  transfer: { name: 'Transfer', description: 'Pattern Recognition' },
+  precision: { name: 'Precision', description: 'Error Sensitivity' },
+  retrieval: { name: 'Retrieval', description: 'Recall Discipline' },
+  receptivity: { name: 'Receptivity', description: 'Feedback Comfort' },
+};
+
+// Diamond Button Component
+function DiamondButton({ 
+  value, 
+  selected, 
+  hovered,
+  onClick, 
+  onHover,
+  onLeave,
+  disabled 
+}: { 
+  value: number; 
+  selected: boolean;
+  hovered: boolean;
+  onClick: () => void;
+  onHover: () => void;
+  onLeave: () => void;
+  disabled: boolean;
+}) {
+  const isFilled = selected || (hovered && value <= (selected ? value : 0));
+  
+  return (
+    <button
+      onClick={onClick}
+      onMouseEnter={onHover}
+      onMouseLeave={onLeave}
+      disabled={disabled}
+      className="group focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+    >
+      <div 
+        className={`
+          w-14 h-14 rotate-45 border-2 flex items-center justify-center
+          transition-all duration-200
+          ${selected
+            ? 'bg-[#54acbf] border-[#54acbf] shadow-[0_0_20px_rgba(84,172,191,0.5)]'
+            : hovered
+              ? 'bg-[#54acbf]/30 border-[#54acbf]'
+              : 'bg-transparent border-[#54acbf]/60 group-hover:border-[#54acbf]'
+          }
+        `}
+      >
+        <span 
+          className={`
+            -rotate-45 text-lg font-medium transition-colors duration-200
+            ${selected 
+              ? 'text-[#011c40]' 
+              : 'text-[#54acbf]'
+            }
+          `}
+        >
+          {value}
+        </span>
+      </div>
+    </button>
+  );
+}
+
+// Likert Scale Component
+function LikertScale({
+  selectedValue,
+  onSelect,
+  disabled
+}: {
+  selectedValue: number | null;
+  onSelect: (value: number) => void;
+  disabled: boolean;
+}) {
+  const [hoveredValue, setHoveredValue] = useState<number | null>(null);
+
+  return (
+    <div className="flex flex-col items-center gap-4">
+      {/* Scale Labels */}
+      <div className="flex items-center justify-between w-full max-w-md px-2">
+        <span className="text-[#54acbf]/70 text-sm uppercase tracking-[0.15em]">Never</span>
+        <span className="text-[#54acbf]/70 text-sm uppercase tracking-[0.15em]">Always</span>
+      </div>
+      
+      {/* Diamond Buttons */}
+      <div className="flex items-center gap-4">
+        {[1, 2, 3, 4, 5].map((value) => (
+          <DiamondButton
+            key={value}
+            value={value}
+            selected={selectedValue === value}
+            hovered={hoveredValue === value}
+            onClick={() => onSelect(value)}
+            onHover={() => setHoveredValue(value)}
+            onLeave={() => setHoveredValue(null)}
+            disabled={disabled}
+          />
+        ))}
+      </div>
+      
+      {/* Intensity Label */}
+      <div className="h-6">
+        {selectedValue && (
+          <span className="text-[#54acbf]/70 text-sm uppercase tracking-[0.15em]">
+            Intensity: {selectedValue}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export default function CognitiveQuestionsPage() {
   const router = useRouter();
@@ -27,7 +141,6 @@ export default function CognitiveQuestionsPage() {
 
   const questions = getCognitiveQuestions();
   const currentQuestion = questions[currentIndex];
-  const progress = Math.round((currentIndex / questions.length) * 100);
 
   useEffect(() => {
     const state = getInitialState();
@@ -41,7 +154,6 @@ export default function CognitiveQuestionsPage() {
   }, [router]);
 
   useEffect(() => {
-    // Reset start time when question changes
     startTimeRef.current = Date.now();
     setSelectedValue(null);
   }, [currentIndex]);
@@ -61,7 +173,6 @@ export default function CognitiveQuestionsPage() {
       response_time_ms: responseTime,
     };
 
-    // Save to Supabase
     await supabase.from('bo_v1_diagnostic_responses').insert({
       session_id: sessionId,
       question_id: currentQuestion.id,
@@ -73,15 +184,12 @@ export default function CognitiveQuestionsPage() {
     const newResponses = [...responses, newResponse];
     setResponses(newResponses);
 
-    // Save state
     const state = getInitialState();
     saveState({ ...state, cognitiveResponses: newResponses });
 
-    // Move to next after brief delay
     setTimeout(() => {
       setAnimating(false);
       if (currentIndex + 1 >= questions.length) {
-        // Complete cognitive stage
         supabase.from('bo_v1_sessions').update({ 
           cognitive_completed: true,
           questions_answered: newResponses.length 
@@ -101,7 +209,7 @@ export default function CognitiveQuestionsPage() {
 
     const newResponse: DiagnosticResponse = {
       question_id: currentQuestion.id,
-      value: 3, // Default to neutral
+      value: 3,
       skipped: true,
     };
 
@@ -136,114 +244,85 @@ export default function CognitiveQuestionsPage() {
 
   if (!currentQuestion) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-        <div className="animate-spin h-8 w-8 border-2 border-cyan-500 border-t-transparent rounded-full" />
+      <div className="min-h-screen bg-[#011c40] flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-[#54acbf] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
-  // Get dimension for display
-  const dimensionLabels: Record<string, string> = {
-    calibration: 'Self-Monitoring',
-    tolerance: 'Productive Struggle',
-    transfer: 'Pattern Recognition',
-    precision: 'Error Sensitivity',
-    retrieval: 'Recall Discipline',
-    receptivity: 'Feedback Comfort',
+  const dimensionInfo = DIMENSION_LABELS[currentQuestion.dimension] || { 
+    name: 'Cognitive', 
+    description: 'Assessment' 
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-900 to-cyan-950 flex flex-col">
-      {/* Header */}
-      <header className="p-4 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="text-cyan-400 text-sm font-medium">Cognitive</span>
-          <span className="text-slate-600">•</span>
-          <span className="text-slate-500 text-sm">{dimensionLabels[currentQuestion.dimension]}</span>
-        </div>
-        <div className="text-slate-500 text-sm">
-          {currentIndex + 1} / {questions.length}
-        </div>
-      </header>
+    <main className="min-h-screen relative overflow-hidden bg-[#011c40]">
+      <Atmosphere variant="subtle" />
+      <GradientFade position="bottom" />
 
-      {/* Progress bar */}
-      <div className="px-4">
-        <div className="h-1 bg-slate-800 rounded-full overflow-hidden">
-          <div
-            className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 transition-all duration-300"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-      </div>
-
-      {/* Question area */}
-      <div className="flex-1 flex flex-col items-center justify-center p-6">
-        <div className={`max-w-xl w-full transition-all duration-300 ${animating ? 'opacity-0 translate-y-4' : 'opacity-100'}`}>
-          {/* Question card */}
-          <div className="bg-slate-800/50 rounded-2xl p-8 border border-slate-700/50 mb-8">
-            <p className="text-xl text-slate-100 leading-relaxed text-center">
-              "{currentQuestion.text}"
-            </p>
+      {/* Navigation */}
+      <nav className="fixed top-0 left-0 right-0 px-8 py-6 flex justify-between items-center z-50">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <GemIcon glow color={ARCANE_COLORS.teal} />
+            <span className="text-xs font-black uppercase tracking-[0.3em] text-[#a7ebf2]">ERA</span>
           </div>
+        </div>
+        <div className="flex items-center gap-6">
+          <span className="text-[11px] uppercase tracking-[0.2em] text-[#26658c]">
+            Lore
+          </span>
+          <span className="text-[11px] uppercase tracking-[0.2em] text-[#26658c]">
+            Archives
+          </span>
+        </div>
+      </nav>
 
-          {/* Likert scale */}
-          <div className="space-y-3">
-            {LIKERT_OPTIONS.map((option) => (
-              <button
-                key={option.value}
-                onClick={() => handleSelect(option.value)}
-                disabled={animating}
-                className={`w-full p-4 rounded-xl border transition-all ${
-                  selectedValue === option.value
-                    ? 'bg-cyan-500/20 border-cyan-500 text-cyan-300'
-                    : 'bg-slate-800/30 border-slate-700 text-slate-300 hover:bg-slate-800/50 hover:border-slate-600'
-                } disabled:opacity-50`}
-              >
-                <div className="flex items-center gap-4">
-                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-                    selectedValue === option.value ? 'border-cyan-500 bg-cyan-500' : 'border-slate-600'
-                  }`}>
-                    {selectedValue === option.value && (
-                      <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                    )}
-                  </div>
-                  <span className="flex-1 text-left">{option.label}</span>
-                  <span className="text-slate-600 text-sm">{option.value}</span>
+      {/* Main Content */}
+      <div className="container mx-auto px-6 min-h-screen flex items-center justify-center">
+        
+        {/* Question Card */}
+        <div className="w-full max-w-3xl">
+          <div className={`transition-all duration-300 ${animating ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
+            
+            <CardFrame active={true} variant="elevated">
+              <div className="p-12 lg:p-16 flex flex-col items-center">
+                
+                {/* Header */}
+                <div className="mb-10 text-center">
+                  <span className="text-[#54acbf] text-sm uppercase tracking-[0.3em]">
+                    Likert{' '}
+                    <span className="border-b border-[#54acbf] pb-0.5">Resonance</span>
+                    {' '}{currentIndex + 1}/{questions.length}
+                  </span>
                 </div>
-              </button>
-            ))}
-          </div>
 
-          {/* Skip button */}
-          <div className="mt-6 text-center">
-            <button
-              onClick={handleSkip}
-              disabled={animating}
-              className="text-slate-500 hover:text-slate-400 text-sm transition-colors disabled:opacity-50"
-            >
-              Skip this question →
-            </button>
+                {/* Question Text */}
+                <p className="text-2xl lg:text-3xl text-[#a7ebf2] leading-relaxed text-center font-light italic mb-12">
+                  "{currentQuestion.text}"
+                </p>
+
+                {/* Likert Scale */}
+                <LikertScale
+                  selectedValue={selectedValue}
+                  onSelect={handleSelect}
+                  disabled={animating}
+                />
+
+                {/* Skip */}
+                <button
+                  onClick={handleSkip}
+                  disabled={animating}
+                  className="mt-8 text-[#26658c] hover:text-[#54acbf] text-xs uppercase tracking-widest transition-colors disabled:opacity-50"
+                >
+                  Skip →
+                </button>
+              </div>
+            </CardFrame>
+
           </div>
         </div>
-      </div>
 
-      {/* Progress indicator */}
-      <div className="p-4 flex justify-center gap-1">
-        {questions.slice(Math.max(0, currentIndex - 5), currentIndex + 6).map((_, i) => {
-          const actualIndex = Math.max(0, currentIndex - 5) + i;
-          return (
-            <div
-              key={actualIndex}
-              className={`w-2 h-2 rounded-full transition-all ${
-                actualIndex < currentIndex ? 'bg-cyan-500' :
-                actualIndex === currentIndex ? 'bg-cyan-400 w-4' :
-                'bg-slate-700'
-              }`}
-            />
-          );
-        })}
       </div>
     </main>
   );

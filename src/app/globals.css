@@ -2,26 +2,206 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/**
+ * ExamRizz Arena — Arcane Design System
+ * Global Styles
+ */
 
-@media (prefers-color-scheme: dark) {
+/* ============================================
+   BASE STYLES
+   ============================================ */
+
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    /* Arcane Colour Variables */
+    --arcane-bg-deep: #011c40;
+    --arcane-bg-mid: #023859;
+    --arcane-bg-light: #26658c;
+    --arcane-teal: #54acbf;
+    --arcane-ice: #a7ebf2;
+    --arcane-gold: #d4a55a;
+    --arcane-line: #26658c;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-[#011c40] text-[#a7ebf2] antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+    overflow-x: hidden;
+  }
+
+  /* Selection */
+  ::selection {
+    @apply bg-[#54acbf] text-[#011c40];
+  }
+
+  /* Scrollbar Styling */
+  ::-webkit-scrollbar {
+    @apply w-2;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-[#011c40];
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-[#26658c] rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-[#54acbf];
+  }
+
+  /* Focus Visible */
+  :focus-visible {
+    @apply outline-none ring-2 ring-[#54acbf] ring-offset-2 ring-offset-[#011c40];
   }
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+/* ============================================
+   COMPONENT CLASSES
+   ============================================ */
+
+@layer components {
+  /* Glow Effects */
+  .arcane-glow-teal {
+    box-shadow: 0 0 30px rgba(84, 172, 191, 0.4);
+  }
+
+  .arcane-glow-ice {
+    box-shadow: 0 0 20px rgba(167, 235, 242, 0.3);
+  }
+
+  .arcane-glow-gold {
+    box-shadow: 0 0 25px rgba(212, 165, 90, 0.3);
+  }
+
+  /* Background Gradient */
+  .bg-arcane-gradient {
+    background: linear-gradient(135deg, #011c40 0%, #023859 50%, #26658c 100%);
+  }
+
+  /* Text Gradient (for special headings) */
+  .text-arcane-gradient {
+    @apply bg-gradient-to-r from-[#54acbf] to-[#a7ebf2] bg-clip-text text-transparent;
+  }
+
+  /* Card Hover Effect */
+  .arcane-card-hover {
+    @apply transition-all duration-500;
+  }
+
+  .arcane-card-hover:hover {
+    @apply scale-[1.02] arcane-glow-teal;
+  }
+
+  /* Border Glow Animation */
+  .arcane-border-glow {
+    @apply relative;
+  }
+
+  .arcane-border-glow::before {
+    content: '';
+    @apply absolute inset-0 rounded-sm;
+    background: linear-gradient(90deg, transparent, #54acbf, transparent);
+    background-size: 200% 100%;
+    animation: arcane-border-shimmer 3s linear infinite;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .arcane-border-glow:hover::before {
+    opacity: 0.5;
+  }
+
+  /* Italic Serif (for quotes) */
+  .font-serif-italic {
+    font-family: 'Libre Baskerville', Georgia, serif;
+    font-style: italic;
+  }
 }
 
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+
 @layer utilities {
-  .text-balance {
-    text-wrap: balance;
+  /* Perspective for 3D transforms */
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+
+  /* Backface visibility */
+  .backface-hidden {
+    backface-visibility: hidden;
+  }
+
+  /* Preserve 3D */
+  .preserve-3d {
+    transform-style: preserve-3d;
+  }
+
+  /* Rotate Y */
+  .rotate-y-180 {
+    transform: rotateY(180deg);
+  }
+
+  /* Custom grayscale values */
+  .grayscale-subtle {
+    filter: grayscale(0.2);
+  }
+}
+
+/* ============================================
+   KEYFRAME ANIMATIONS (Non-Tailwind)
+   ============================================ */
+
+@keyframes arcane-border-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Entrance animations for page transitions */
+@keyframes arcane-entrance-stagger {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.arcane-stagger > * {
+  animation: arcane-entrance-stagger 0.6s ease-out forwards;
+  opacity: 0;
+}
+
+.arcane-stagger > *:nth-child(1) { animation-delay: 0.1s; }
+.arcane-stagger > *:nth-child(2) { animation-delay: 0.2s; }
+.arcane-stagger > *:nth-child(3) { animation-delay: 0.3s; }
+.arcane-stagger > *:nth-child(4) { animation-delay: 0.4s; }
+.arcane-stagger > *:nth-child(5) { animation-delay: 0.5s; }
+.arcane-stagger > *:nth-child(6) { animation-delay: 0.6s; }
+
+/* ============================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

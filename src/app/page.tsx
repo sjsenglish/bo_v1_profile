@@ -6,6 +6,16 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { saveState, clearState } from '@/lib/assessment';
 
+import {
+  Atmosphere,
+  GradientFade,
+  CardFrame,
+  CardFrameStack,
+  ArcaneButton,
+  GemIcon,
+  ARCANE_COLORS,
+} from '@/components/ui/arcane';
+
 export default function LandingPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -40,80 +50,100 @@ export default function LandingPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-950 to-slate-900 flex items-center justify-center p-6">
-      <div className="max-w-2xl w-full text-center">
-        <div className="mb-8">
-          <h1 className="text-5xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-amber-400 bg-clip-text text-transparent mb-4">
-            ExamRizz Arena
-          </h1>
-          <p className="text-slate-400 text-lg">
-            Discover your perfect degree match
-          </p>
-        </div>
+    <main className="min-h-screen relative overflow-hidden">
+      <Atmosphere variant="default" />
+      <GradientFade position="bottom" />
 
-        <div className="grid grid-cols-3 gap-4 mb-12">
-          <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700">
-            <div className="text-3xl font-bold text-purple-400">30,960</div>
-            <div className="text-sm text-slate-500">UK Courses</div>
-          </div>
-          <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700">
-            <div className="text-3xl font-bold text-cyan-400">10</div>
-            <div className="text-sm text-slate-500">Dispositions</div>
-          </div>
-          <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700">
-            <div className="text-3xl font-bold text-amber-400">~10</div>
-            <div className="text-sm text-slate-500">Minutes</div>
-          </div>
+      {/* Navigation */}
+      <nav className="fixed top-0 left-0 right-0 px-8 py-6 flex justify-between items-center z-50">
+        <div className="flex items-center gap-2 cursor-pointer">
+          <GemIcon glow color={ARCANE_COLORS.teal} />
+          <span className="text-xs font-black uppercase tracking-[0.3em] text-[#a7ebf2]">ERA</span>
         </div>
+        <div className="flex items-center gap-8">
+          <button className="text-[11px] uppercase tracking-[0.2em] text-[#54acbf] hover:text-[#a7ebf2] transition-colors">
+            Lore
+          </button>
+          <button className="text-[11px] uppercase tracking-[0.2em] text-[#54acbf] hover:text-[#a7ebf2] transition-colors">
+            Archives
+          </button>
+        </div>
+      </nav>
 
-        <div className="bg-slate-800/30 rounded-2xl p-6 mb-8 border border-slate-700/50">
-          <h2 className="text-lg font-semibold text-slate-200 mb-4">How it works</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-left">
-            <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400 font-bold text-sm shrink-0">1</div>
-              <div>
-                <div className="text-slate-200 font-medium">Vibe Check</div>
-                <div className="text-slate-500 text-sm">Swipe through 12 images</div>
+      {/* Main Content */}
+      <div className="container mx-auto px-6 min-h-screen flex items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-center w-full pt-20 lg:pt-0">
+          
+          {/* Left: Hero Text */}
+          <div className="space-y-8 animate-arcane-fade-in">
+            <div className="space-y-4">
+              <p className="text-[#54acbf] uppercase tracking-[0.4em] text-xs font-bold">
+                The Great Assessment Begins
+              </p>
+              
+              <h1 className="text-6xl lg:text-8xl font-black uppercase leading-[0.9] tracking-tight">
+                <span className="text-[#a7ebf2]">ExamRizz</span>
+                <br />
+                <span className="text-[#54acbf]">Arena</span>
+              </h1>
+            </div>
+
+            <div className="space-y-2 max-w-lg">
+              <p className="text-xl lg:text-2xl text-[#a7ebf2] font-medium">
+                Find where you'll thrive, not just survive.
+              </p>
+              <p className="text-[#54acbf] text-sm lg:text-base leading-relaxed opacity-80">
+                A data-driven assessment to help forge your future beyond guesswork.
+              </p>
+            </div>
+
+            {/* Feature Pills */}
+            <div className="flex flex-wrap gap-3">
+              <div className="px-4 py-2 border border-[#26658c] rounded-sm flex items-center gap-2 bg-[#023859]/50">
+                <GemIcon color={ARCANE_COLORS.ice} size="sm" />
+                <span className="text-[10px] uppercase tracking-[0.15em] text-[#54acbf]">30,960 UK Courses</span>
+              </div>
+              <div className="px-4 py-2 border border-[#26658c] rounded-sm flex items-center gap-2 bg-[#023859]/50">
+                <GemIcon color={ARCANE_COLORS.teal} size="sm" />
+                <span className="text-[10px] uppercase tracking-[0.15em] text-[#54acbf]">10 Dispositions</span>
+              </div>
+              <div className="px-4 py-2 border border-[#26658c] rounded-sm flex items-center gap-2 bg-[#023859]/50">
+                <GemIcon color={ARCANE_COLORS.gold} size="sm" />
+                <span className="text-[10px] uppercase tracking-[0.15em] text-[#54acbf]">~10 Minutes</span>
               </div>
             </div>
-            <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-full bg-cyan-500/20 flex items-center justify-center text-cyan-400 font-bold text-sm shrink-0">2</div>
-              <div>
-                <div className="text-slate-200 font-medium">40 Questions</div>
-                <div className="text-slate-500 text-sm">Build your learning profile</div>
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-400 font-bold text-sm shrink-0">3</div>
-              <div>
-                <div className="text-slate-200 font-medium">Get Matched</div>
-                <div className="text-slate-500 text-sm">See your top 20 courses</div>
-              </div>
+
+            {/* CTA */}
+            <div className="pt-4">
+              <ArcaneButton 
+                onClick={startAssessment}
+                disabled={loading}
+                loading={loading}
+                size="lg"
+                icon="arrow"
+              >
+                Begin
+              </ArcaneButton>
             </div>
           </div>
+
+          {/* Right: Mystery Card */}
+          <div className="hidden lg:flex justify-center lg:justify-end">
+            <CardFrameStack className="w-80 h-[500px]">
+              <CardFrame active={true} className="w-full h-full">
+                <div className="absolute inset-0 bg-gradient-to-br from-[#011c40] to-[#023859]" />
+                <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center space-y-6">
+                  {/* Spinning Dashed Circle */}
+                  <div className="w-24 h-24 rounded-full border-2 border-dashed border-[#a7ebf2] opacity-50 animate-[spin_12s_linear_infinite]" />
+                  <p className="text-[#a7ebf2] font-serif italic tracking-wider text-xl">
+                    Your Spirit Awaits
+                  </p>
+                </div>
+              </CardFrame>
+            </CardFrameStack>
+          </div>
+
         </div>
-
-        <button
-          onClick={startAssessment}
-          disabled={loading}
-          className="w-full md:w-auto px-12 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-semibold rounded-xl text-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-purple-500/25"
-        >
-          {loading ? (
-            <span className="flex items-center justify-center gap-2">
-              <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-              </svg>
-              Starting...
-            </span>
-          ) : (
-            'Start Assessment'
-          )}
-        </button>
-
-        <p className="text-slate-600 text-sm mt-4">
-          No account required • Results are shareable
-        </p>
       </div>
     </main>
   );

@@ -12,15 +12,22 @@ import { assignIdentity } from '@/lib/identity';
 import { rankCoursesAsync } from '@/lib/matching';
 import { Course } from '@/lib/types';
 
+import {
+  Atmosphere,
+  GemIcon,
+  ArcaneButton,
+  ARCANE_COLORS,
+} from '@/components/ui/arcane';
+
 const STEPS = [
-  'Analysing your responses...',
-  'Building cognitive profile...',
-  'Mapping behavioural patterns...',
-  'Calculating capacities...',
-  'Assigning your familiar...',
-  'Matching to courses...',
-  'Ranking your top matches...',
-  'Finalising results...',
+  { label: 'Analysing responses', description: 'Reading the patterns in your choices...' },
+  { label: 'Building cognitive profile', description: 'Mapping your mental architecture...' },
+  { label: 'Mapping behavioural patterns', description: 'Understanding how you learn...' },
+  { label: 'Calculating capacities', description: 'Measuring your potential...' },
+  { label: 'Summoning your familiar', description: 'A spirit emerges from the aether...' },
+  { label: 'Scanning the archives', description: 'Searching 30,960 UK courses...' },
+  { label: 'Ranking matches', description: 'Finding where you belong...' },
+  { label: 'Finalising results', description: 'Your destiny awaits...' },
 ];
 
 export default function ProcessingPage() {
@@ -149,12 +156,12 @@ export default function ProcessingPage() {
           rank: m.rank,
         }));
 
-       const { error: matchError } = await supabase
-  .from('bo_v1_matches')
-  .upsert(matchInserts, { 
-    onConflict: 'session_id,course_id',
-    ignoreDuplicates: false 
-  });
+        const { error: matchError } = await supabase
+          .from('bo_v1_matches')
+          .upsert(matchInserts, { 
+            onConflict: 'session_id,course_id',
+            ignoreDuplicates: false 
+          });
 
         if (matchError) throw matchError;
 
@@ -176,77 +183,147 @@ export default function ProcessingPage() {
 
   if (error) {
     return (
-      <main className="min-h-screen bg-slate-900 flex items-center justify-center p-6">
-        <div className="text-center">
-          <div className="text-red-400 text-lg mb-4">Something went wrong</div>
-          <p className="text-slate-500 mb-6">{error}</p>
-          <button
-            onClick={() => router.push('/')}
-            className="px-6 py-2 bg-slate-800 text-slate-300 rounded-lg hover:bg-slate-700"
-          >
+      <main className="min-h-screen bg-[#011c40] relative overflow-hidden flex items-center justify-center p-6">
+        <Atmosphere variant="subtle" />
+        <div className="text-center space-y-6">
+          <div className="w-16 h-16 mx-auto border-2 border-red-500/50 rounded-full flex items-center justify-center">
+            <span className="text-red-400 text-2xl">✕</span>
+          </div>
+          <div>
+            <h2 className="text-xl text-[#a7ebf2] font-bold mb-2">Something went wrong</h2>
+            <p className="text-[#26658c] text-sm max-w-md">{error}</p>
+          </div>
+          <ArcaneButton onClick={() => router.push('/')} variant="secondary">
             Start Over
-          </button>
+          </ArcaneButton>
         </div>
       </main>
     );
   }
 
+  const currentStepData = STEPS[currentStep];
+
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-950 to-slate-900 flex items-center justify-center p-6">
-      <div className="max-w-md w-full text-center">
-        <div className="mb-8">
-          <div className="relative w-24 h-24 mx-auto">
-            <div className="absolute inset-0 rounded-full border-4 border-slate-800" />
-            <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-purple-500 animate-spin" />
-            <div className="absolute inset-2 rounded-full border-4 border-transparent border-t-pink-500 animate-spin" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }} />
-            <div className="absolute inset-4 rounded-full border-4 border-transparent border-t-cyan-500 animate-spin" style={{ animationDuration: '2s' }} />
+    <main className="min-h-screen bg-[#011c40] relative overflow-hidden flex items-center justify-center p-6">
+      <Atmosphere variant="intense" />
+
+      <div className="max-w-lg w-full text-center">
+        
+        {/* Arcane Loader */}
+        <div className="mb-12">
+          <div className="relative w-48 h-48 mx-auto">
+            {/* Outer Ring */}
+            <div 
+              className="absolute inset-0 border-4 border-[#54acbf] border-t-transparent rounded-full arcane-glow-teal"
+              style={{ animation: 'arcane-spin-chase 2s cubic-bezier(0.4, 0, 0.2, 1) infinite' }}
+            />
+            {/* Middle Ring (counter-rotate) */}
+            <div 
+              className="absolute inset-4 border-4 border-[#a7ebf2] border-b-transparent rounded-full arcane-glow-ice"
+              style={{ animation: 'arcane-spin-chase-reverse 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite' }}
+            />
+            {/* Inner Ring */}
+            <div 
+              className="absolute inset-8 border-4 border-[#26658c] border-t-transparent rounded-full"
+              style={{ animation: 'arcane-spin-chase 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite' }}
+            />
+            {/* Centre Gem */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="animate-arcane-pulse-glow">
+                <GemIcon glow color={ARCANE_COLORS.teal} size="lg" />
+              </div>
+            </div>
           </div>
         </div>
 
-        <h2 className="text-xl text-slate-100 font-medium mb-8">
-          {STEPS[currentStep]}
-        </h2>
-
-        <div className="space-y-2">
-          {STEPS.map((step, i) => (
-            <div
-              key={i}
-              className={`flex items-center gap-3 transition-all duration-300 ${
-                i < currentStep ? 'opacity-50' :
-                i === currentStep ? 'opacity-100' :
-                'opacity-30'
-              }`}
-            >
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${
-                i < currentStep ? 'bg-green-500/20 text-green-400' :
-                i === currentStep ? 'bg-purple-500/20 text-purple-400' :
-                'bg-slate-800 text-slate-600'
-              }`}>
-                {i < currentStep ? (
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
-                ) : i === currentStep ? (
-                  <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse" />
-                ) : (
-                  <span className="text-xs">{i + 1}</span>
-                )}
-              </div>
-              <span className={`text-sm ${
-                i === currentStep ? 'text-slate-200' : 'text-slate-500'
-              }`}>
-                {step}
-              </span>
-            </div>
-          ))}
-        </div>
-
-        <div className="mt-12 p-4 bg-slate-800/30 rounded-xl border border-slate-700/50">
-          <p className="text-slate-500 text-sm">
-            💡 Matching you against courses from UK universities
+        {/* Current Step Display */}
+        <div className="mb-10 space-y-2">
+          <h2 className="text-2xl font-bold uppercase tracking-widest text-[#a7ebf2]">
+            {currentStepData.label}
+          </h2>
+          <p className="text-[#54acbf] font-serif italic text-sm opacity-80">
+            {currentStepData.description}
           </p>
         </div>
+
+        {/* Step List */}
+        <div className="space-y-3 text-left max-w-sm mx-auto">
+          {STEPS.map((step, i) => {
+            const isComplete = i < currentStep;
+            const isCurrent = i === currentStep;
+            const isPending = i > currentStep;
+
+            return (
+              <div
+                key={i}
+                className={`
+                  flex items-center gap-4 transition-all duration-500
+                  ${isComplete ? 'opacity-50' : ''}
+                  ${isCurrent ? 'opacity-100' : ''}
+                  ${isPending ? 'opacity-20' : ''}
+                `}
+              >
+                {/* Status Icon */}
+                <div 
+                  className={`
+                    w-8 h-8 rounded-full flex items-center justify-center shrink-0
+                    border-2 transition-all duration-500
+                    ${isComplete 
+                      ? 'border-[#54acbf] bg-[#54acbf]/20' 
+                      : isCurrent 
+                        ? 'border-[#54acbf] bg-[#011c40] arcane-glow-teal' 
+                        : 'border-[#26658c] bg-[#011c40]'
+                    }
+                  `}
+                >
+                  {isComplete ? (
+                    <svg className="w-4 h-4 text-[#54acbf]" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  ) : isCurrent ? (
+                    <div className="w-2 h-2 bg-[#54acbf] rounded-full animate-pulse" />
+                  ) : (
+                    <span className="text-[#26658c] text-xs font-mono">{i + 1}</span>
+                  )}
+                </div>
+
+                {/* Label */}
+                <span 
+                  className={`
+                    text-sm transition-colors duration-500
+                    ${isCurrent ? 'text-[#a7ebf2]' : 'text-[#26658c]'}
+                  `}
+                >
+                  {step.label}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Footer Info */}
+        <div className="mt-12 py-4 px-6 bg-[#023859]/30 border border-[#26658c]/50 rounded-sm">
+          <p className="text-[#26658c] text-xs uppercase tracking-widest">
+            <GemIcon color={ARCANE_COLORS.ice} size="sm" className="inline-block mr-2 -mt-1" />
+            Matching against 30,960 UK university courses
+          </p>
+        </div>
+
       </div>
+
+      {/* Keyframe styles injected */}
+      <style jsx>{`
+        @keyframes arcane-spin-chase {
+          0% { transform: rotate(0deg); }
+          50% { transform: rotate(280deg); }
+          100% { transform: rotate(360deg); }
+        }
+        @keyframes arcane-spin-chase-reverse {
+          0% { transform: rotate(360deg); }
+          50% { transform: rotate(80deg); }
+          100% { transform: rotate(0deg); }
+        }
+      `}</style>
     </main>
   );
 }
