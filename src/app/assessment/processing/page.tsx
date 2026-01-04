@@ -169,15 +169,13 @@ export default function ProcessingPage() {
 
         if (profileError) throw profileError;
 
+        // Only include columns that exist in bo_v1_matches table
         const matchInserts = matches.map(m => ({
           session_id: state.sessionId,
           course_id: m.course.id,
-          score: m.score,
-          fit_score: m.disposition_score,
+          score: Math.round(m.score),
+          fit_score: Math.round(m.disposition_score),
           friction: m.friction,
-          cognitive_score: m.enjoyment_score,
-          behavioral_penalty: 0,
-          vibe_bonus: m.vibe_bonus,
           rank: m.rank,
         }));
 
