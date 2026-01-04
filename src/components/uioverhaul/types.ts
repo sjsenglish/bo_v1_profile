@@ -81,13 +81,15 @@ export interface Scenario {
 export interface VibeOption {
     id: string;
     label: string;
-    image: string; // Changed from imageUrl to match mock usage often seen
-    description: string; // Added description
+    image?: string; // Made optional
+    description?: string;
+    indicates?: string; // Added for new tracking
 }
 
 export interface VibePair {
-    id: number;
-    question: string; // Added question
+    id: string | number; // Support both for now to avoid breakage, but data is strings
+    dimension: string; // Added dimension
+    question: string;
     optionA: VibeOption;
     optionB: VibeOption;
 }
@@ -103,4 +105,6 @@ export interface Task {
     stimulus: string | string[]; // Text content or code block
     question: string;
     options?: string[]; // For MCQ
+    correctAnswerIndex?: number; // Added for scoring
+    gradingCriteria?: Record<string, string>; // Added for AI grading (score -> criteria)
 }

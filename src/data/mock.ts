@@ -186,300 +186,242 @@ export const SCENARIOS: Scenario[] = [
 
 export const VIBE_PAIRS: VibePair[] = [
     {
-        id: 1,
-        question: "Which environment do you thrive in?",
-        optionA: { id: 'chaos', label: 'Ordered Chaos', image: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', description: 'Beauty in complexity' },
-        optionB: { id: 'structure', label: 'Rigid Structure', image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', description: 'Beauty in order' }
+        id: "TRA_01",
+        dimension: "Transfer",
+        question: "You're stuck on a problem. You could try applying an approach from a different subject, but it might not work and you'd lose time. Or you could look up the specific method.",
+        optionA: { id: 'A', label: "Try the cross-subject approach first. Even if it fails, I might learn something.", indicates: "high_transfer" },
+        optionB: { id: 'B', label: "Look up the right method. No point reinventing the wheel.", indicates: "low_transfer" }
     },
     {
-        id: 2,
-        question: "What drives your curiosity?",
-        optionA: { id: 'nature', label: 'Organic Growth', image: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', description: 'Natural evolution' },
-        optionB: { id: 'tech', label: 'Digital Precision', image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', description: 'Engineered perfection' }
+        id: "TRA_02",
+        dimension: "Transfer",
+        question: "You've just learned something new and it clicks. What happens next?",
+        optionA: { id: 'A', label: "I start noticing how it connects to other things I already know.", indicates: "high_transfer" },
+        optionB: { id: 'B', label: "I focus on practising it until I've properly locked it in.", indicates: "low_transfer" }
     },
     {
-        id: 3,
-        question: "How do you view the world?",
-        optionA: { id: 'detail', label: 'Micro Details', image: 'https://images.unsplash.com/photo-1580927752452-89d86da3fa0a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', description: 'Focus on the small' },
-        optionB: { id: 'bigpicture', label: 'Macro Vision', image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', description: 'Focus on the whole' }
+        id: "REC_01",
+        dimension: "Receptivity",
+        question: "Your mock results are lower than expected. A teacher offers to go through your paper with you.",
+        optionA: { id: 'A', label: "Take them up on it. Quicker than figuring it out alone.", indicates: "high_receptivity" },
+        optionB: { id: 'B', label: "Look through it myself first. I'll ask if I get stuck.", indicates: "low_receptivity" }
     },
     {
-        id: 4,
-        question: "Which learning style fits you?",
-        optionA: { id: 'theory', label: 'Abstract Theory', image: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', description: 'Conceptual understanding' },
-        optionB: { id: 'practice', label: 'Practical Application', image: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', description: 'Hands-on learning' }
+        id: "REC_02",
+        dimension: "Receptivity",
+        question: "You've finished a draft of your personal statement. A family member offers to read it and give honest feedback.",
+        optionA: { id: 'A', label: "Let them read it. Another perspective might catch something I can't see.", indicates: "high_receptivity" },
+        optionB: { id: 'B', label: "Hold off. I'd rather get it to a place I'm happy with first.", indicates: "low_receptivity" }
+    },
+    {
+        id: "TOL_01",
+        dimension: "Tolerance",
+        question: "You've been stuck on a problem for 20 minutes with no progress. You could keep going or move on and come back later.",
+        optionA: { id: 'A', label: "Keep going. Sometimes it clicks right after the frustrating bit.", indicates: "high_tolerance" },
+        optionB: { id: 'B', label: "Move on. I'll come back with fresh eyes.", indicates: "low_tolerance" }
+    },
+    {
+        id: "TOL_02",
+        dimension: "Tolerance",
+        question: "You're working through a difficult topic and it's not making sense. You could push through the chapter or switch to something easier and return tomorrow.",
+        optionA: { id: 'A', label: "Push through. I don't like leaving things half-understood.", indicates: "high_tolerance" },
+        optionB: { id: 'B', label: "Switch for now. Forcing it rarely works for me.", indicates: "low_tolerance" }
+    },
+    {
+        id: "PRE_01",
+        dimension: "Precision",
+        question: "You've finished an assignment due in 20 minutes and spot a small inconsistency near the end. Fixing it properly would take 15 minutes, leaving no time to check anything else.",
+        optionA: { id: 'A', label: "Fix it. I'd rather submit with one thing done properly.", indicates: "high_precision" },
+        optionB: { id: 'B', label: "Leave it and check the rest. One small error probably matters less than something bigger I haven't spotted.", indicates: "low_precision" }
+    },
+    {
+        id: "PRE_02",
+        dimension: "Precision",
+        question: "You're in an exam with 10 minutes left and 3 questions unanswered.",
+        optionA: { id: 'A', label: "Focus on one and answer it properly.", indicates: "high_precision" },
+        optionB: { id: 'B', label: "Attempt all three at surface level. Partial marks add up.", indicates: "low_precision" }
+    },
+    {
+        id: "CAL_01",
+        dimension: "Calibration",
+        question: "You've just submitted a piece of coursework. A friend asks how you think you did.",
+        optionA: { id: 'A', label: "I give a specific prediction. I usually have a sense.", indicates: "high_calibration" },
+        optionB: { id: 'B', label: "I say I don't know. I've been wrong too many times.", indicates: "low_calibration" }
+    },
+    {
+        id: "CAL_02",
+        dimension: "Calibration",
+        question: "You're about to hand in a test. You can review your answers or leave early.",
+        optionA: { id: 'A', label: "Review. Even if I feel good, I might catch something.", indicates: "low_calibration" },
+        optionB: { id: 'B', label: "Leave. If I second-guess myself I'll probably change right answers to wrong ones.", indicates: "high_calibration" }
+    },
+    {
+        id: "DEP_01",
+        dimension: "Depth",
+        question: "You're choosing a research topic for your EPQ. You could go narrow and specific or broad and exploratory.",
+        optionA: { id: 'A', label: "Go narrow. I can actually become an expert on something specific.", indicates: "high_depth" },
+        optionB: { id: 'B', label: "Go broad. I'll discover more connections and it's more interesting.", indicates: "low_depth" }
+    },
+    {
+        id: "DEP_02",
+        dimension: "Depth",
+        question: "You're interested in a topic but the syllabus only covers the basics. You could explore further or move on to other subjects.",
+        optionA: { id: 'A', label: "Go deeper. I want to properly understand it, not just pass the exam.", indicates: "high_depth" },
+        optionB: { id: 'B', label: "Move on. I'll come back to it after exams if I'm still curious.", indicates: "low_depth" }
+    },
+    {
+        id: "STR_01",
+        dimension: "Structure",
+        question: "You're starting a new project with no set format. You could plan it out first or dive in and shape it as you go.",
+        optionA: { id: 'A', label: "Plan first. I work better knowing where I'm heading.", indicates: "high_structure" },
+        optionB: { id: 'B', label: "Dive in. I'll figure out the structure once I see what I've got.", indicates: "low_structure" }
+    },
+    {
+        id: "STR_02",
+        dimension: "Structure",
+        question: "Two teachers explain the same topic differently. One gives clear steps to follow, the other lets you work it out yourself.",
+        optionA: { id: 'A', label: "I prefer clear steps. I can focus on learning rather than guessing what to do.", indicates: "high_structure" },
+        optionB: { id: 'B', label: "I prefer working it out. I remember it better when I find my own way.", indicates: "low_structure" }
+    },
+    {
+        id: "SOC_01",
+        dimension: "Social",
+        question: "You're stuck on a problem the night before it's due.",
+        optionA: { id: 'A', label: "Message someone to talk it through. Explaining it often unsticks me.", indicates: "high_social" },
+        optionB: { id: 'B', label: "Keep working alone. I focus better without back-and-forth.", indicates: "low_social" }
+    },
+    {
+        id: "SOC_02",
+        dimension: "Social",
+        question: "You're revising for a big exam. A friend suggests a study group.",
+        optionA: { id: 'A', label: "Join. I revise better when I can discuss and test each other.", indicates: "high_social" },
+        optionB: { id: 'B', label: "Decline. I cover more ground on my own.", indicates: "low_social" }
+    },
+    {
+        id: "CON_01",
+        dimension: "Consistency",
+        question: "It's a free weekend with no deadlines. You could do some work ahead or take the time off.",
+        optionA: { id: 'A', label: "Do some work. I like staying on top of things even when there's no pressure.", indicates: "high_consistency" },
+        optionB: { id: 'B', label: "Take it off. I work best when there's a real deadline.", indicates: "low_consistency" }
+    },
+    {
+        id: "CON_02",
+        dimension: "Consistency",
+        question: "Your productivity varies a lot day to day. Someone suggests a fixed daily schedule.",
+        optionA: { id: 'A', label: "Worth trying. I'd probably get more done overall.", indicates: "high_consistency" },
+        optionB: { id: 'B', label: "Wouldn't suit me. I work in bursts and that's fine.", indicates: "low_consistency" }
+    },
+    {
+        id: "RET_01",
+        dimension: "Retrieval",
+        question: "You're revising a topic you covered last month. You could reread your notes or test yourself without looking.",
+        optionA: { id: 'A', label: "Test myself. It's harder but I'll know what I've actually forgotten.", indicates: "high_retrieval" },
+        optionB: { id: 'B', label: "Reread first. I want to refresh my memory before testing.", indicates: "low_retrieval" }
+    },
+    {
+        id: "RET_02",
+        dimension: "Retrieval",
+        question: "You've got a set of flashcards and a set of summary notes for the same topic.",
+        optionA: { id: 'A', label: "Flashcards. Active recall works better for me.", indicates: "high_retrieval" },
+        optionB: { id: 'B', label: "Summary notes. I prefer seeing everything laid out together.", indicates: "low_retrieval" }
     }
 ];
 
 export const TASKS: Task[] = [
     {
-        id: 1,
-        metaCluster: "STEM",
+        id: 1, // STEM_TECH_01
+        metaCluster: "Computing, Engineering, Maths", // MAPPED from markdown "Meta-cluster"
         type: "MCQ",
-        title: "Pattern Recognition",
-        timeLimit: 60,
-        stimulus: "Sequence: 2, 4, 8, 16, ...",
-        question: "What comes next?",
-        options: ["30", "32", "24", "64"]
-    },
-    {
-        id: 2,
-        metaCluster: "STEM",
-        type: "MCQ",
-        title: "Scientific Method",
+        title: "STEM-Technical",
         timeLimit: 90,
-        stimulus: "You observe that a bacterial culture stops growing in the presence of a specific mold. You see blue-green patches.",
-        question: "What's the most scientifically interesting next step?",
+        stimulus: "A student builds an automatic plant watering system:\n- Moisture sensor checks soil every hour\n- If soil is dry, pump activates for 10 seconds\n- Pump draws water from tank\n- Tank has a float sensor that shows empty/not empty\n- If tank is empty, warning light turns on and pump won't activate\n\nProblem: The soil is dry, the tank is full, but the pump never activates. The warning light is off.",
+        question: "Which component is most likely faulty?",
         options: [
-            "Conclude the antibiotic doesn't work",
-            "Investigate what the blue-green patches are",
-            "Repeat the experiment with fresh materials",
-            "Increase the antibiotic concentration"
-        ]
+            "Moisture sensor",
+            "Pump",
+            "Float sensor",
+            "Warning light"
+        ],
+        correctAnswerIndex: 0
     },
     {
-        id: 3,
-        metaCluster: "Humanities",
+        id: 2, // STEM_SCI_01
+        metaCluster: "Physical Sciences, Life Sciences",
         type: "MCQ",
-        title: "Argument Logic",
+        title: "STEM-Scientific",
         timeLimit: 90,
-        stimulus: `Historian A: "The Roman Empire fell primarily due to internal economic corruption."
-Historian B: "That cannot be true; the Barbarian invasions of 476 AD were the definitive end point of the Western Empire."`,
-        question: "What is the main flaw in Historian B's counter-argument?",
+        stimulus: "You're growing bacteria for a lab project. You've set up three identical petri dishes with the same bacteria and nutrients.\n\nAfter 48 hours, two dishes have normal growth. The third has almost no growth, but you notice a small patch of mould in the corner.",
+        question: "What's your next step?",
         options: [
-            "They confuse a symptom with a cause",
-            "They rely on an arbitrary date to dismiss a long-term process",
-            "They ignore the Eastern Roman Empire",
-            "They provide no evidence for invasions"
-        ]
+            "Discard the third dish and report results from the two successful ones",
+            "Repeat the entire experiment. Something went wrong.",
+            "Investigate the mould. It might be producing something that kills bacteria.",
+            "Report all three dishes and note the anomaly for the supervisor"
+        ],
+        correctAnswerIndex: 2
     },
     {
-        id: 4,
-        metaCluster: "Social Sciences",
+        id: 3, // HUM_01
+        metaCluster: "History, Languages, Philosophy, English",
+        type: "MCQ",
+        title: "Humanities",
+        timeLimit: 90,
+        stimulus: "A historian writes:\n\n\"The factory workers of 1830s Manchester lived in appalling conditions. Contemporary accounts describe overcrowded housing, poor sanitation, and widespread disease. This proves that industrialisation was a disaster for the working class.\"",
+        question: "A tutor asks: \"What's the problem with this argument?\"",
+        options: [
+            "The sources might be biased. Reformers had reasons to exaggerate.",
+            "\"Appalling\" is subjective. Conditions might have been normal for the time.",
+            "It only describes Manchester. Other industrial cities might have been different.",
+            "It doesn't compare to conditions before industrialisation. Workers might have been worse off in rural areas."
+        ],
+        correctAnswerIndex: 3
+    },
+    {
+        id: 4, // SOC_SCI_01
+        metaCluster: "Psychology, Sociology, Politics, Economics",
+        type: "SHORT_RESPONSE", // Changed to SHORT_RESPONSE
+        title: "Social Sciences",
+        timeLimit: 90,
+        stimulus: "Research shows that employees who work from home report higher job satisfaction. A company mandates work-from-home for all staff to improve morale.",
+        question: "In one sentence, why might this backfire?",
+        options: [], // Empty for short response
+        gradingCriteria: {
+            "0": "No reasoning or misses the point",
+            "1": "Vague ('not everyone likes working from home')",
+            "2": "Identifies self-selection (people who chose it liked it, forcing is different)",
+            "3": "Explains self-selection AND considers who loses out (extroverts, new staff, those with poor home setups)"
+        }
+    },
+    {
+        id: 5, // PROF_01
+        metaCluster: "Law, Business, Medicine, Education",
         type: "SHORT_RESPONSE",
-        title: "Policy Analysis",
+        title: "Professional",
         timeLimit: 90,
-        stimulus: `A company mandates all employees work from office 5 days/week, claiming "remote work reduces productivity and team cohesion."`,
-        question: "In 2-3 sentences, identify one hidden assumption in this policy.",
-        options: []
+        stimulus: "A junior doctor is running behind schedule. The next patient has been waiting 45 minutes for a routine check-up. The current patient, an elderly woman, is medically fine but clearly lonely and wants to keep talking.",
+        question: "What should the doctor do, and why?",
+        options: [],
+        gradingCriteria: {
+            "0": "Just picks an action with no reasoning",
+            "1": "Picks an action with basic justification",
+            "2": "Acknowledges the tension between competing duties",
+            "3": "Weighs trade-offs, considers both patients' perspectives, shows awareness that both options have costs"
+        }
     },
     {
-        id: 5,
-        metaCluster: "Professional",
+        id: 6, // CREA_01
+        metaCluster: "Art, Design, Media, Architecture",
         type: "SHORT_RESPONSE",
-        title: "Triage Scenario",
+        title: "Creative",
         timeLimit: 90,
-        stimulus: `You are a junior doctor. Two patients arrive simultaneously:
-1. Elderly patient with chest pain (potential heart attack)
-2. Child with a deep gash on their leg (bleeding heavily but stable)`,
-        question: "Who do you assess first and why? (2-3 sentences)",
-        options: []
-    },
-    {
-        id: 6,
-        metaCluster: "Creative",
-        type: "SHORT_RESPONSE",
-        title: "Design Trade-off",
-        timeLimit: 90,
-        stimulus: `You are designing a sustainable smartphone. You must choose between:
-A) Biodegradable casing (durability: 2 years)
-B) Recycled Aluminum casing (durability: 6 years)`,
-        question: "Which do you choose for maximum sustainability? Justify considering user behaviour.",
-        options: []
-    },
-    {
-        id: 7,
-        metaCluster: "Business",
-        type: "MCQ",
-        title: "Market Strategy",
-        timeLimit: 60,
-        stimulus: "A luxury brand wants to launch a budget product line under the same logo.",
-        question: "What is the primary risk of this strategy?",
-        options: [
-            "Brand Dilution",
-            "Supply Chain Complexity",
-            "Increased Marketing Costs",
-            "Regulatory Hurdles"
-        ]
-    },
-    {
-        id: 8,
-        metaCluster: "STEM",
-        type: "MCQ",
-        title: "Probability Logic",
-        timeLimit: 60,
-        stimulus: "A coin is flipped 5 times and lands on Heads every time.",
-        question: "What is the probability the next flip is Heads?",
-        options: [
-            "50%",
-            "Less than 50% (due to regression)",
-            "More than 50% (hot streak)",
-            "Depends on the wind"
-        ]
-    },
-    {
-        id: 9,
-        metaCluster: "Creative",
-        type: "MCQ",
-        title: "Visual composition",
-        timeLimit: 45,
-        stimulus: "In color theory, complementary colors create high contrast.",
-        question: "Which of these color combinations creates the highest visual contrast?",
-        options: [
-            "Blue & Orange",
-            "Red & Pink",
-            "Green & Blue",
-            "White & Grey"
-        ]
-    },
-    {
-        id: 10,
-        metaCluster: "Humanities",
-        type: "SHORT_RESPONSE",
-        title: "Ethical Dilemma",
-        timeLimit: 120,
-        stimulus: "An autonomous car must choose between hitting a pedestrian or swerving into a wall, injuring the passenger.",
-        question: "Propose a guiding principle for coding this decision.",
-        options: []
-    },
-    {
-        id: 11,
-        metaCluster: "STEM",
-        type: "MCQ",
-        title: "Data Interpretation",
-        timeLimit: 60,
-        stimulus: "Graph shows: Ice cream sales increase as forest fires increase.",
-        question: "What is the most likely variable causing this correlation?",
-        options: [
-            "Temperature / Summer Heat",
-            "People eating ice cream cause fires",
-            "Fire smoke makes people hungry",
-            "Pure coincidence"
-        ]
-    },
-    {
-        id: 12,
-        metaCluster: "Business",
-        type: "MCQ",
-        title: "Investment Logic",
-        timeLimit: 60,
-        stimulus: "Sunk Cost Fallacy Example:",
-        question: "Which scenario best describes the Sunk Cost Fallacy?",
-        options: [
-            "Continuing a failing project because you already spent £1M on it",
-            "Selling a stock because it dropped 10%",
-            "Investing in a startup because you like the founder",
-            "Buying a house because rent is expensive"
-        ]
-    },
-    {
-        id: 13,
-        metaCluster: "Technology",
-        type: "MCQ",
-        title: "System Design",
-        timeLimit: 60,
-        stimulus: "You need to store passwords for users.",
-        question: "What is the industry standard method?",
-        options: [
-            "Hashing and Salting",
-            "Encryption with a master key",
-            "Plaintext in a secure database",
-            "Encoding in Base64"
-        ]
-    },
-    {
-        id: 14,
-        metaCluster: "Creative",
-        type: "SHORT_RESPONSE",
-        title: "Narrative Arc",
-        timeLimit: 90,
-        stimulus: "A story begins with the protagonist achieving their goal immediately.",
-        question: "What is the likely narrative consequence of this opening?",
-        options: []
-    },
-    {
-        id: 15,
-        metaCluster: "Humanities",
-        type: "MCQ",
-        title: "Source Analysis",
-        timeLimit: 60,
-        stimulus: "A diary entry from 1914 vs a history textbook written in 1990.",
-        question: "The diary entry is an example of:",
-        options: [
-            "Primary Source",
-            "Secondary Source",
-            "Tertiary Source",
-            "Fabricated Source"
-        ]
-    },
-    {
-        id: 16,
-        metaCluster: "STEM",
-        type: "MCQ",
-        title: "Physics Intuition",
-        timeLimit: 45,
-        stimulus: "A feather and a bowling ball are dropped in a vacuum.",
-        question: "Which hits the ground first?",
-        options: [
-            "They hit at the same time",
-            "The bowling ball",
-            "The feather",
-            "Impossible to say"
-        ]
-    },
-    {
-        id: 17,
-        metaCluster: "Business",
-        type: "SHORT_RESPONSE",
-        title: "Negotiation",
-        timeLimit: 90,
-        stimulus: "Your supplier raises prices by 20% without notice.",
-        question: "Draft your opening sentence for the negotiation email.",
-        options: []
-    },
-    {
-        id: 18,
-        metaCluster: "Social Sciences",
-        type: "MCQ",
-        title: "Cognitive Bias",
-        timeLimit: 60,
-        stimulus: "You only read news that confirms your existing beliefs.",
-        question: "What is this bias called?",
-        options: [
-            "Confirmation Bias",
-            "Availability Heuristic",
-            "Dunning-Kruger Effect",
-            "Anchoring Bias"
-        ]
-    },
-    {
-        id: 19,
-        metaCluster: "Technology",
-        type: "MCQ",
-        title: "AI Ethics",
-        timeLimit: 60,
-        stimulus: "An AI generates art based on scraped images.",
-        question: "What is the primary legal/ethical concern?",
-        options: [
-            "Copyright and Artist Compensation",
-            "Energy consumption",
-            "It's too easy to make",
-            "The art isn't 'real'"
-        ]
-    },
-    {
-        id: 20,
-        metaCluster: "General",
-        type: "MCQ",
-        title: "Logic Puzzle",
-        timeLimit: 90,
-        stimulus: "If All Bloops are Razzes, and No Razzes are Zorgs...",
-        question: "Which statement is true?",
-        options: [
-            "No Bloops are Zorgs",
-            "Some Bloops are Zorgs",
-            "All Zorgs are Bloops",
-            "All Razzes are Bloops"
-        ]
+        stimulus: "You're designing a poster for a charity event. The client wants it to be:\n\n1. Eye-catching\n2. Include all event details\n3. Feel welcoming and not overwhelming\n\nYou can only fully achieve two.",
+        question: "Which two do you prioritise, and what do you sacrifice?",
+        options: [],
+        gradingCriteria: {
+            "0": "Doesn't make a choice or ignores the constraint",
+            "1": "Picks two, single basic reason",
+            "2": "Picks two, gives reasoning for each choice",
+            "3": "Picks two, gives strong reasoning for each AND explains what's lost by sacrificing the third"
+        }
     }
 ];

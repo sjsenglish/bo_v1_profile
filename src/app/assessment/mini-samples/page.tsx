@@ -5,130 +5,8 @@ import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { getInitialState, saveState, addMiniSampleResponse } from '@/lib/assessment';
 import { supabase } from '@/lib/supabase';
-import { MiniSampleResponse, EnjoymentRating, MetaCluster } from '@/lib/types';
-
-// ============================================================================
-// TYPES
-// ============================================================================
-
-interface MiniSampleTask {
-  id: string;
-  meta_cluster: MetaCluster;
-  title: string;
-  stimulus: string;
-  question: string;
-  task_type: 'MCQ' | 'SHORT_RESPONSE';
-  options: string[];
-  time_limit: number;
-  correct_answer?: number;
-}
-
-// ============================================================================
-// HARDCODED TASKS (from ArenaUIOverhaul spec)
-// ============================================================================
-
-const TASKS: MiniSampleTask[] = [
-  {
-    id: 'task_stem_tech',
-    meta_cluster: 'STEM_TECH',
-    title: 'System Debugging',
-    task_type: 'MCQ',
-    time_limit: 90,
-    stimulus: `A smart plant watering system is failing.
-
-Rules:
-1. IF soil_moisture < 30% AND tank_level > 10% THEN activate_pump()
-2. IF pump_is_active AND time > 60s THEN emergency_stop()
-
-Current State:
-soil_moisture = 25%
-tank_level = 5%
-pump_status = OFF`,
-    question: 'Why didn\'t the pump activate?',
-    options: [
-      'Soil moisture is too high',
-      'Tank level is too low',
-      'Emergency stop was triggered',
-      'Sensor malfunction'
-    ],
-    correct_answer: 1
-  },
-  {
-    id: 'task_stem_sci',
-    meta_cluster: 'STEM_SCI',
-    title: 'Experimental Analysis',
-    task_type: 'MCQ',
-    time_limit: 90,
-    stimulus: `You're growing bacteria in petri dishes. Dish A (control) should show normal growth. Dish B (experimental) should show reduced growth due to a new antibiotic.
-
-Day 3 Results:
-- Dish A: Dense bacterial colonies (expected)
-- Dish B: Dense bacterial colonies (unexpected!)
-- Dish B also has blue-green patches around edges`,
-    question: 'What\'s the most scientifically interesting next step?',
-    options: [
-      'Conclude the antibiotic doesn\'t work',
-      'Investigate what the blue-green patches are',
-      'Repeat the experiment with fresh materials',
-      'Increase the antibiotic concentration'
-    ],
-    correct_answer: 1
-  },
-  {
-    id: 'task_humanities',
-    meta_cluster: 'HUMANITIES',
-    title: 'Argument Logic',
-    task_type: 'MCQ',
-    time_limit: 90,
-    stimulus: `Historian A: "The Roman Empire fell primarily due to internal economic corruption."
-
-Historian B: "That cannot be true; the Barbarian invasions of 476 AD were the definitive end point of the Western Empire."`,
-    question: 'What is the main flaw in Historian B\'s counter-argument?',
-    options: [
-      'They confuse a symptom with a cause',
-      'They rely on an arbitrary date to dismiss a long-term process',
-      'They ignore the Eastern Roman Empire',
-      'They provide no evidence for invasions'
-    ],
-    correct_answer: 1
-  },
-  {
-    id: 'task_social_sci',
-    meta_cluster: 'SOCIAL_SCI',
-    title: 'Policy Analysis',
-    task_type: 'SHORT_RESPONSE',
-    time_limit: 90,
-    stimulus: `A company mandates all employees work from office 5 days/week, claiming "remote work reduces productivity and team cohesion."`,
-    question: 'In 2-3 sentences, identify one hidden assumption in this policy.',
-    options: []
-  },
-  {
-    id: 'task_professional',
-    meta_cluster: 'PROFESSIONAL',
-    title: 'Triage Scenario',
-    task_type: 'SHORT_RESPONSE',
-    time_limit: 90,
-    stimulus: `You are a junior doctor. Two patients arrive simultaneously:
-
-1. Elderly patient with chest pain (potential heart attack)
-2. Child with a deep gash on their leg (bleeding heavily but stable)`,
-    question: 'Who do you assess first and why? (2-3 sentences)',
-    options: []
-  },
-  {
-    id: 'task_creative',
-    meta_cluster: 'CREATIVE',
-    title: 'Design Trade-off',
-    task_type: 'SHORT_RESPONSE',
-    time_limit: 90,
-    stimulus: `You are designing a sustainable smartphone. You must choose between:
-
-A) Biodegradable casing (durability: 2 years)
-B) Recycled Aluminum casing (durability: 6 years)`,
-    question: 'Which do you choose for maximum sustainability? Justify considering user behaviour.',
-    options: []
-  }
-];
+import { MiniSampleResponse, EnjoymentRating } from '@/lib/types';
+import { TASKS } from '@/data/mock';
 
 // ============================================================================
 // CIRCULAR TIMER COMPONENT
@@ -219,16 +97,14 @@ function EnjoymentModal({
               <button
                 key={opt.value}
                 onClick={() => setTaskRating(opt.value)}
-                className={`flex flex-col items-center justify-center w-20 h-20 rounded-full border-2 transition-all duration-200 ${
-                  taskRating === opt.value
+                className={`flex flex-col items-center justify-center w-20 h-20 rounded-full border-2 transition-all duration-200 ${taskRating === opt.value
                     ? 'bg-white/10 border-[#54acbf] scale-110 shadow-[0_0_20px_rgba(84,172,191,0.3)]'
                     : 'bg-black/20 border-white/10 hover:border-white/30 hover:bg-white/5'
-                }`}
+                  }`}
               >
                 <span className="text-2xl mb-1">{opt.emoji}</span>
-                <span className={`text-[10px] font-bold uppercase tracking-wide ${
-                  taskRating === opt.value ? 'text-white' : 'text-gray-500'
-                }`}>
+                <span className={`text-[10px] font-bold uppercase tracking-wide ${taskRating === opt.value ? 'text-white' : 'text-gray-500'
+                  }`}>
                   {opt.label}
                 </span>
               </button>
@@ -246,16 +122,14 @@ function EnjoymentModal({
               <button
                 key={opt.value}
                 onClick={() => setDailyRating(opt.value)}
-                className={`flex flex-col items-center justify-center w-20 h-20 rounded-full border-2 transition-all duration-200 ${
-                  dailyRating === opt.value
+                className={`flex flex-col items-center justify-center w-20 h-20 rounded-full border-2 transition-all duration-200 ${dailyRating === opt.value
                     ? 'bg-white/10 border-[#54acbf] scale-110 shadow-[0_0_20px_rgba(84,172,191,0.3)]'
                     : 'bg-black/20 border-white/10 hover:border-white/30 hover:bg-white/5'
-                }`}
+                  }`}
               >
                 <span className="text-2xl mb-1">{opt.emoji}</span>
-                <span className={`text-[10px] font-bold uppercase tracking-wide ${
-                  dailyRating === opt.value ? 'text-white' : 'text-gray-500'
-                }`}>
+                <span className={`text-[10px] font-bold uppercase tracking-wide ${dailyRating === opt.value ? 'text-white' : 'text-gray-500'
+                  }`}>
                   {opt.label}
                 </span>
               </button>
@@ -266,11 +140,10 @@ function EnjoymentModal({
         <button
           disabled={taskRating === null || dailyRating === null}
           onClick={() => onContinue(taskRating!, dailyRating!)}
-          className={`w-full py-3 rounded-xl font-semibold transition-all ${
-            taskRating !== null && dailyRating !== null
+          className={`w-full py-3 rounded-xl font-semibold transition-all ${taskRating !== null && dailyRating !== null
               ? 'bg-[#54acbf] text-[#011c40] hover:bg-[#54acbf]/90'
               : 'bg-gray-700 text-gray-500 cursor-not-allowed'
-          }`}
+            }`}
         >
           Continue
         </button>
@@ -329,15 +202,15 @@ export default function MiniSamplesPage() {
 
   // Reset state when task changes
   useEffect(() => {
-    setTimeLeft(currentTask.time_limit);
+    setTimeLeft(currentTask.timeLimit);
     setIsOvertime(false);
     setSelectedOption(null);
     setTextResponse('');
     startTimeRef.current = Date.now();
-  }, [currentTaskIndex, currentTask.time_limit]);
+  }, [currentTaskIndex, currentTask.timeLimit]);
 
   // Validation
-  const isValid = currentTask.task_type === 'MCQ'
+  const isValid = currentTask.type === 'MCQ'
     ? selectedOption !== null
     : textResponse.length >= 50 && textResponse.length <= 300;
 
@@ -350,20 +223,21 @@ export default function MiniSamplesPage() {
     setSubmitting(true);
 
     const timeTaken = Math.round((Date.now() - startTimeRef.current) / 1000);
-    const answer = currentTask.task_type === 'MCQ'
-      ? currentTask.options[selectedOption!]
+    // Safe access options with fallback
+    const answer = currentTask.type === 'MCQ'
+      ? (currentTask.options ? currentTask.options[selectedOption!] : '')
       : textResponse;
 
     // Calculate score
     let score = 0;
-    if (currentTask.task_type === 'MCQ' && currentTask.correct_answer !== undefined) {
-      score = selectedOption === currentTask.correct_answer ? 3 : 1;
-    } else if (currentTask.task_type === 'SHORT_RESPONSE') {
-      score = textResponse.length >= 100 ? 2 : 1;
+    if (currentTask.type === 'MCQ' && currentTask.correctAnswerIndex !== undefined) {
+      score = selectedOption === currentTask.correctAnswerIndex ? 3 : 1;
+    } else if (currentTask.type === 'SHORT_RESPONSE') {
+      score = textResponse.length >= 100 ? 2 : 1; // Placeholder scoring
     }
 
     const newResponse: MiniSampleResponse = {
-      task_id: currentTask.id,
+      task_id: String(currentTask.id),
       response: answer,
       score,
       time_taken_seconds: timeTaken,
@@ -374,7 +248,7 @@ export default function MiniSamplesPage() {
     // Save to database
     await supabase.from('bo_v1_mini_sample_responses').insert({
       session_id: sessionId,
-      task_id: currentTask.id,
+      task_id: String(currentTask.id),
       response_text: answer,
       score,
       time_taken_ms: timeTaken * 1000,
@@ -426,7 +300,7 @@ export default function MiniSamplesPage() {
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div>
             <div className="text-gray-500 font-bold tracking-widest text-xs uppercase mb-1">
-              Task {currentTaskIndex + 1} of {TASKS.length}: {currentTask.meta_cluster.replace('_', '-')}
+              Task {currentTaskIndex + 1} of {TASKS.length}: {currentTask.title}
             </div>
             <div className="w-48 h-1.5 bg-gray-800 rounded-full overflow-hidden">
               <div
@@ -445,7 +319,7 @@ export default function MiniSamplesPage() {
                 Overtime
               </span>
             )}
-            <CircularTimer duration={currentTask.time_limit} timeLeft={timeLeft} />
+            <CircularTimer duration={currentTask.timeLimit} timeLeft={timeLeft} />
           </div>
         </div>
       </div>
@@ -456,7 +330,7 @@ export default function MiniSamplesPage() {
           {/* Stimulus Card */}
           <div className="bg-[#023859]/50 rounded-xl border border-white/10 overflow-hidden mb-8 shadow-lg">
             <div className="bg-white/5 px-6 py-3 border-b border-white/5 flex items-center space-x-2">
-              {currentTask.task_type === 'MCQ' ? (
+              {currentTask.type === 'MCQ' ? (
                 <svg className="w-4 h-4 text-[#54acbf]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
                 </svg>
@@ -469,7 +343,7 @@ export default function MiniSamplesPage() {
             </div>
             <div className="p-6">
               <div className="text-gray-200 leading-relaxed whitespace-pre-line text-lg font-medium">
-                {currentTask.stimulus}
+                {typeof currentTask.stimulus === 'string' ? currentTask.stimulus : currentTask.stimulus.join('\n')}
               </div>
             </div>
           </div>
@@ -478,20 +352,18 @@ export default function MiniSamplesPage() {
           <div className="mb-8">
             <h2 className="text-2xl font-bold text-white mb-6 leading-snug">{currentTask.question}</h2>
 
-            {currentTask.task_type === 'MCQ' ? (
+            {currentTask.type === 'MCQ' && currentTask.options ? (
               <div className="space-y-3">
                 {currentTask.options.map((opt, idx) => (
                   <label
                     key={idx}
-                    className={`flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
-                      selectedOption === idx
+                    className={`flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${selectedOption === idx
                         ? 'bg-[#54acbf]/10 border-[#54acbf] shadow-[0_0_15px_rgba(84,172,191,0.2)]'
                         : 'bg-[#023859]/30 border-white/10 hover:border-white/30'
-                    }`}
+                      }`}
                   >
-                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center mr-4 transition-colors ${
-                      selectedOption === idx ? 'border-[#54acbf]' : 'border-gray-600'
-                    }`}>
+                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center mr-4 transition-colors ${selectedOption === idx ? 'border-[#54acbf]' : 'border-gray-600'
+                      }`}>
                       {selectedOption === idx && <div className="w-3 h-3 rounded-full bg-[#54acbf]" />}
                     </div>
                     <span className={`text-lg ${selectedOption === idx ? 'text-white' : 'text-gray-400'}`}>
@@ -545,11 +417,10 @@ export default function MiniSamplesPage() {
           <button
             disabled={!isValid || submitting}
             onClick={handleSubmit}
-            className={`min-w-[160px] py-3 px-6 rounded-xl font-semibold transition-all ${
-              isValid && !submitting
+            className={`min-w-[160px] py-3 px-6 rounded-xl font-semibold transition-all ${isValid && !submitting
                 ? 'bg-[#54acbf] text-[#011c40] hover:bg-[#54acbf]/90'
                 : 'bg-gray-700 text-gray-500 cursor-not-allowed'
-            }`}
+              }`}
           >
             {submitting ? 'Submitting...' : 'Submit'}
           </button>
