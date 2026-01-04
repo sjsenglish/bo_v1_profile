@@ -170,11 +170,12 @@ export default function ProcessingPage() {
         if (profileError) throw profileError;
 
         // Only include columns that exist in bo_v1_matches table
+        // Note: matchCourse returns cognitive_score, not disposition_score
         const matchInserts = matches.map(m => ({
           session_id: state.sessionId,
           course_id: m.course.id,
-          score: Math.round(m.score),
-          fit_score: Math.round(m.disposition_score),
+          score: Math.round(m.score || 0),
+          fit_score: Math.round((m as any).cognitive_score || m.score || 0),
           friction: m.friction,
           rank: m.rank,
         }));
