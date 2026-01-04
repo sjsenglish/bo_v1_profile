@@ -358,6 +358,58 @@ export interface Guild {
 }
 
 // ============================================================================
+// LEGACY COMPATIBILITY TYPES (for matching.ts and identity.ts)
+// ============================================================================
+
+// Cognitive dispositions (subset of all 10)
+export type CognitiveDimension =
+  | 'calibration'
+  | 'tolerance'
+  | 'transfer'
+  | 'precision'
+  | 'retrieval'
+  | 'receptivity';
+
+export const COGNITIVE_DIMENSIONS: CognitiveDimension[] = [
+  'calibration',
+  'tolerance',
+  'transfer',
+  'precision',
+  'retrieval',
+  'receptivity',
+];
+
+// Behavioral dispositions (subset of all 10)
+export type BehavioralDimension = 'structure' | 'consistency' | 'social' | 'depth';
+
+export const BEHAVIORAL_DIMENSIONS: BehavioralDimension[] = [
+  'structure',
+  'consistency',
+  'social',
+  'depth',
+];
+
+// Combined dimension type
+export type Dimension = CognitiveDimension | BehavioralDimension;
+
+// Profile types for matching algorithm
+export interface CognitiveProfile {
+  calibration: DispositionScore;
+  tolerance: DispositionScore;
+  transfer: DispositionScore;
+  precision: DispositionScore;
+  retrieval: DispositionScore;
+  receptivity: DispositionScore;
+}
+
+export interface BehavioralProfile {
+  structure: DispositionScore;
+  consistency: DispositionScore;
+  social: DispositionScore;
+  depth: DispositionScore;
+}
+
+// ============================================================================
 // CONSTANTS
 // ============================================================================
 
