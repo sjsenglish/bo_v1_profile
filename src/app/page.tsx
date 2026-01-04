@@ -41,8 +41,6 @@ export default function LandingPage() {
       sessionId: data.id,
       stage: 'vibe',
       vibeSwipes: [],
-      cognitiveResponses: [],
-      behavioralResponses: [],
       startedAt: Date.now(),
     });
 
