@@ -7,10 +7,11 @@ import { getInitialState, saveState, addScenarioResponse } from '@/lib/assessmen
 import { ScenarioResponse, Scenario } from '@/lib/types';
 import { supabase } from '@/lib/supabase';
 
-// Hardcoded scenarios from ArenaUIOverhaul
+// 20 scenarios - 2 per dimension (10 dimensions)
 const SCENARIOS = [
+  // SOCIAL (2 items)
   {
-    id: 'scenario_1',
+    id: 'social_1',
     question: "It's 10pm and you're stuck on a problem set that's due tomorrow morning.",
     option_a: "Message the group chat to see if anyone's figured it out.",
     option_b: "Grind through it alone — you'll learn more that way.",
@@ -19,7 +20,18 @@ const SCENARIOS = [
     b_indicates: 'low',
   },
   {
-    id: 'scenario_2',
+    id: 'social_2',
+    question: "You're revising for a big exam next week.",
+    option_a: "Organise a study group to quiz each other.",
+    option_b: "Find a quiet corner and work through past papers solo.",
+    dimension: 'social',
+    a_indicates: 'high',
+    b_indicates: 'low',
+  },
+
+  // RECEPTIVITY (2 items)
+  {
+    id: 'receptivity_1',
     question: "You receive harsh feedback on a draft essay from your teacher.",
     option_a: "Defend your approach and explain why you made those choices.",
     option_b: "Accept it immediately and rewrite the section completely.",
@@ -28,7 +40,58 @@ const SCENARIOS = [
     b_indicates: 'high',
   },
   {
-    id: 'scenario_3',
+    id: 'receptivity_2',
+    question: "A classmate suggests your project approach is fundamentally flawed.",
+    option_a: "Listen carefully and consider completely changing direction.",
+    option_b: "Explain your reasoning — you've thought this through.",
+    dimension: 'receptivity',
+    a_indicates: 'high',
+    b_indicates: 'low',
+  },
+
+  // TRANSFER (2 items)
+  {
+    id: 'transfer_1',
+    question: "You encounter a new type of problem you've never seen before.",
+    option_a: "Look for patterns from other subjects that might apply.",
+    option_b: "Find the specific formula or method for this exact problem type.",
+    dimension: 'transfer',
+    a_indicates: 'high',
+    b_indicates: 'low',
+  },
+  {
+    id: 'transfer_2',
+    question: "Your biology teacher asks you to explain osmosis.",
+    option_a: "Use an analogy from everyday life or another subject.",
+    option_b: "Stick to the precise scientific definition and terminology.",
+    dimension: 'transfer',
+    a_indicates: 'high',
+    b_indicates: 'low',
+  },
+
+  // STRUCTURE (2 items)
+  {
+    id: 'structure_1',
+    question: "You have to choose an EPQ topic.",
+    option_a: "Pick something practical with a clear, definite answer.",
+    option_b: "Pick something philosophical with multiple open interpretations.",
+    dimension: 'structure',
+    a_indicates: 'high',
+    b_indicates: 'low',
+  },
+  {
+    id: 'structure_2',
+    question: "You're given a choice between two essay questions.",
+    option_a: "The one with a detailed marking rubric and clear expectations.",
+    option_b: "The open-ended one where you can take it anywhere.",
+    dimension: 'structure',
+    a_indicates: 'high',
+    b_indicates: 'low',
+  },
+
+  // DEPTH (2 items)
+  {
+    id: 'depth_1',
     question: "You have a free period in your schedule.",
     option_a: "Go to the library to get ahead on next week's reading.",
     option_b: "Go to the common room to relax and socialise with friends.",
@@ -37,7 +100,18 @@ const SCENARIOS = [
     b_indicates: 'low',
   },
   {
-    id: 'scenario_4',
+    id: 'depth_2',
+    question: "You've finished the required reading for an essay.",
+    option_a: "Find additional sources to go beyond what's expected.",
+    option_b: "Move on to your other subjects — you've done enough here.",
+    dimension: 'depth',
+    a_indicates: 'high',
+    b_indicates: 'low',
+  },
+
+  // TOLERANCE (2 items)
+  {
+    id: 'tolerance_1',
     question: "In a group project, two members aren't pulling their weight.",
     option_a: "Confront them directly and demand they contribute.",
     option_b: "Do the work yourself to ensure you get a good grade.",
@@ -46,11 +120,91 @@ const SCENARIOS = [
     b_indicates: 'high',
   },
   {
-    id: 'scenario_5',
-    question: "You have to choose an EPQ topic.",
-    option_a: "Pick something practical with a clear, definite answer.",
-    option_b: "Pick something philosophical with multiple open interpretations.",
-    dimension: 'structure',
+    id: 'tolerance_2',
+    question: "You've been working on a maths problem for 45 minutes with no progress.",
+    option_a: "Keep pushing — the breakthrough will come eventually.",
+    option_b: "Move on and come back to it later with fresh eyes.",
+    dimension: 'tolerance',
+    a_indicates: 'high',
+    b_indicates: 'low',
+  },
+
+  // PRECISION (2 items)
+  {
+    id: 'precision_1',
+    question: "You're proofreading an essay before submission.",
+    option_a: "Read it once for obvious errors, then submit.",
+    option_b: "Go through multiple times checking spelling, grammar, and formatting separately.",
+    dimension: 'precision',
+    a_indicates: 'low',
+    b_indicates: 'high',
+  },
+  {
+    id: 'precision_2',
+    question: "You're doing a chemistry calculation.",
+    option_a: "Work through carefully, double-checking each step.",
+    option_b: "Get the rough answer quickly and move on.",
+    dimension: 'precision',
+    a_indicates: 'high',
+    b_indicates: 'low',
+  },
+
+  // CALIBRATION (2 items)
+  {
+    id: 'calibration_1',
+    question: "After finishing an exam, your friend asks how you did.",
+    option_a: "Give a confident prediction — you know how these usually go.",
+    option_b: "Say you're not sure — exams are unpredictable.",
+    dimension: 'calibration',
+    a_indicates: 'high',
+    b_indicates: 'low',
+  },
+  {
+    id: 'calibration_2',
+    question: "You're about to get your mock results back.",
+    option_a: "You have a pretty accurate sense of what you'll get.",
+    option_b: "You genuinely have no idea — could be anything.",
+    dimension: 'calibration',
+    a_indicates: 'high',
+    b_indicates: 'low',
+  },
+
+  // RETRIEVAL (2 items)
+  {
+    id: 'retrieval_1',
+    question: "You're revising for an exam next month.",
+    option_a: "Re-read your notes and highlight key points.",
+    option_b: "Test yourself with flashcards and practice questions.",
+    dimension: 'retrieval',
+    a_indicates: 'low',
+    b_indicates: 'high',
+  },
+  {
+    id: 'retrieval_2',
+    question: "You need to memorise a list of key dates for history.",
+    option_a: "Write them out repeatedly until they stick.",
+    option_b: "Cover the dates and try to recall them from memory.",
+    dimension: 'retrieval',
+    a_indicates: 'low',
+    b_indicates: 'high',
+  },
+
+  // CONSISTENCY (2 items)
+  {
+    id: 'consistency_1',
+    question: "It's the weekend and you have coursework due Monday.",
+    option_a: "Stick to your study schedule — Saturday morning as planned.",
+    option_b: "See how you feel — you work better under pressure anyway.",
+    dimension: 'consistency',
+    a_indicates: 'high',
+    b_indicates: 'low',
+  },
+  {
+    id: 'consistency_2',
+    question: "You've set yourself a goal to read 30 pages every evening.",
+    option_a: "You'll hit that target most nights, no matter what.",
+    option_b: "Some nights you'll do more, some less — depends on the day.",
+    dimension: 'consistency',
     a_indicates: 'high',
     b_indicates: 'low',
   },
@@ -135,6 +289,19 @@ export default function ScenariosPage() {
     } else {
       setCurrentIndex((prev) => prev + 1);
     }
+  };
+
+  const handleSkipSection = async () => {
+    if (!sessionId) return;
+
+    // Mark scenarios as completed (skipped)
+    await supabase
+      .from('bo_v1_sessions')
+      .update({ scenarios_completed: true })
+      .eq('id', sessionId);
+
+    saveState({ ...state, stage: 'mini-samples' });
+    router.push('/assessment/mini-samples');
   };
 
   if (!currentScenario) return null;
@@ -278,8 +445,8 @@ export default function ScenariosPage() {
           </p>
         </div>
 
-        {/* Next Button */}
-        <div className="mt-12 flex justify-center">
+        {/* Buttons */}
+        <div className="mt-12 flex flex-col items-center gap-4">
           <button
             onClick={handleNext}
             disabled={!hasInteracted}
@@ -292,6 +459,17 @@ export default function ScenariosPage() {
             Next
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+            </svg>
+          </button>
+
+          {/* Skip Section Button */}
+          <button
+            onClick={handleSkipSection}
+            className="text-gray-500 hover:text-white text-sm font-medium tracking-wide flex items-center transition-colors group px-6 py-2 rounded-full hover:bg-white/5"
+          >
+            Skip this section
+            <svg className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
             </svg>
           </button>
         </div>
