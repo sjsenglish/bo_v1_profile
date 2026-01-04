@@ -5,12 +5,11 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getInitialState, saveState } from '@/lib/assessment';
 import { supabase } from '@/lib/supabase';
-import { QUESTIONS } from '@/lib/questions';
-import { VIBE_CARDS } from '@/lib/vibe-cards';
-import { scoreCognitive, scoreBehavioral, proxyCapacities, processVibeSwipes, applyVibeNudges, findDominant, findNemesis } from '@/lib/scoring';
+import { calculateVibeProfile, collectVibeTags } from '@/lib/vibe-cards';
+import { scoreScenarios, proxyCapacities, findDominant, findNemesis } from '@/lib/scoring';
 import { assignIdentity } from '@/lib/identity';
 import { rankCoursesAsync } from '@/lib/matching';
-import { Course } from '@/lib/types';
+import { Course, Scenario, ScenarioResponse, VibeChoice, Disposition } from '@/lib/types';
 
 import {
   Atmosphere,
@@ -49,30 +48,73 @@ export default function ProcessingPage() {
         await delay(500);
 
         setCurrentStep(1);
-        const cognitiveResponses = state.cognitiveResponses.map(r => ({
-          ...r,
-          value: r.value ?? 3,
+        // Fetch scenarios from database
+        const { data: scenariosData, error: scenariosError } = await supabase
+          .from('bo_v1_scenarios')
+          .select('*')
+          .eq('active', true);
+
+        if (scenariosError) throw scenariosError;
+
+        const scenarios: Scenario[] = (scenariosData || []).map(s => ({
+          id: s.id,
+          dimension: s.dimension as Disposition,
+          scenario_context: s.scenario_context,
+          option_a: s.option_a,
+          option_b: s.option_b,
+          a_indicates: s.a_indicates as 'high' | 'low',
+          b_indicates: s.b_indicates as 'high' | 'low',
+          sort_order: s.sort_order || 0,
+          active: s.active ?? true,
         }));
-        let cognitive = scoreCognitive(cognitiveResponses, QUESTIONS);
         await delay(400);
 
         setCurrentStep(2);
-        const behavioralResponses = state.behavioralResponses.map(r => ({
-          ...r,
-          value: r.value ?? 3,
+        // Fetch scenario responses from database
+        const { data: responsesData, error: responsesError } = await supabase
+          .from('bo_v1_scenario_responses')
+          .select('scenario_id, slider_position')
+          .eq('session_id', state.sessionId);
+
+        if (responsesError) throw responsesError;
+
+        const responses: ScenarioResponse[] = (responsesData || []).map(r => ({
+          scenario_id: r.scenario_id,
+          position: r.slider_position,
         }));
-        const behavioral = scoreBehavioral(behavioralResponses, QUESTIONS);
+
+        // Score scenarios to get unified disposition profile (all 10 dimensions)
+        const dispositionProfile = scoreScenarios(responses, scenarios);
         await delay(400);
 
         setCurrentStep(3);
-        const vibeResult = processVibeSwipes(state.vibeSwipes, VIBE_CARDS);
-        cognitive = applyVibeNudges(cognitive, vibeResult.dispositionNudges);
-        const capacities = proxyCapacities(cognitive);
+        // Get vibe profile and tags from vibe choices (v9 format)
+        const vibeChoices = (state.vibeChoices || []) as VibeChoice[];
+        const vibeProfile = calculateVibeProfile(vibeChoices);
+        const vibeTags = collectVibeTags(vibeChoices);
+
+        // In v9, vibe doesn't nudge dispositions - it just affects course matching via tags
+        // Split into cognitive and behavioral for compatibility with downstream functions
+        const cognitive = {
+          calibration: dispositionProfile.calibration,
+          tolerance: dispositionProfile.tolerance,
+          transfer: dispositionProfile.transfer,
+          precision: dispositionProfile.precision,
+          retrieval: dispositionProfile.retrieval,
+          receptivity: dispositionProfile.receptivity,
+        };
+        const behavioral = {
+          structure: dispositionProfile.structure,
+          consistency: dispositionProfile.consistency,
+          social: dispositionProfile.social,
+          depth: dispositionProfile.depth,
+        };
+        const capacities = proxyCapacities(dispositionProfile);
         await delay(400);
 
         setCurrentStep(4);
-        const dominant = findDominant(cognitive, behavioral);
-        const nemesis = findNemesis(cognitive, behavioral);
+        const dominant = findDominant(dispositionProfile);
+        const nemesis = findNemesis(dispositionProfile);
         const identity = assignIdentity(state.sessionId, cognitive, behavioral, dominant, nemesis);
         await delay(500);
 
@@ -91,7 +133,7 @@ export default function ProcessingPage() {
           cognitive,
           behavioral,
           capacities,
-          vibeResult.tags,
+          vibeTags,
           courses as Course[],
           20
         );
@@ -101,7 +143,7 @@ export default function ProcessingPage() {
 
         const profileData = {
           session_id: state.sessionId,
-          vibe_tags: vibeResult.tags,
+          vibe_tags: vibeTags,
           calibration: cognitive.calibration.value,
           calibration_sigma: cognitive.calibration.sigma,
           tolerance: cognitive.tolerance.value,
@@ -148,10 +190,10 @@ export default function ProcessingPage() {
           session_id: state.sessionId,
           course_id: m.course.id,
           score: m.score,
-          fit_score: m.cognitive_score,
+          fit_score: m.disposition_score,
           friction: m.friction,
-          cognitive_score: m.cognitive_score,
-          behavioral_penalty: m.behavioral_penalty,
+          cognitive_score: m.enjoyment_score,
+          behavioral_penalty: 0, // Not used in v9, keeping for schema compatibility
           vibe_bonus: m.vibe_bonus,
           rank: m.rank,
         }));

@@ -1,48 +1,95 @@
-// ExamRizz Arena v6.2 - TypeScript Types
+// ExamRizz Arena v9 - TypeScript Types (Overhauled Jan 4, 2025)
 
-export type CognitiveDimension = 
-  | 'calibration' 
-  | 'tolerance' 
-  | 'transfer' 
-  | 'precision' 
-  | 'retrieval' 
-  | 'receptivity';
+// ============================================================================
+// DISPOSITIONS (10 dimensions measured via 20 forced-choice scenarios)
+// ============================================================================
 
-export type BehavioralDimension = 
-  | 'structure' 
-  | 'consistency' 
-  | 'social' 
-  | 'depth';
+export type Disposition =
+  | 'social'
+  | 'receptivity'
+  | 'transfer'
+  | 'structure'
+  | 'depth'
+  | 'tolerance'
+  | 'precision'
+  | 'calibration'
+  | 'retrieval'
+  | 'consistency';
 
-export type Dimension = CognitiveDimension | BehavioralDimension;
+export const ALL_DISPOSITIONS: Disposition[] = [
+  'social',
+  'receptivity',
+  'transfer',
+  'structure',
+  'depth',
+  'tolerance',
+  'precision',
+  'calibration',
+  'retrieval',
+  'consistency',
+];
 
-export type Capacity = 'vrb' | 'qnt' | 'spd';
+// ============================================================================
+// META-CLUSTERS (6 clusters measured via mini-sample tasks)
+// ============================================================================
 
-export type Importance = 'CRITICAL' | 'IMPORTANT' | 'BENEFICIAL';
+export type MetaCluster =
+  | 'STEM_TECH'
+  | 'STEM_SCI'
+  | 'HUMANITIES'
+  | 'SOCIAL_SCI'
+  | 'PROFESSIONAL'
+  | 'CREATIVE';
 
-export type Friction = 'LOW' | 'MODERATE' | 'HIGH' | 'VERY_HIGH' | 'EXTREME';
+export const ALL_META_CLUSTERS: MetaCluster[] = [
+  'STEM_TECH',
+  'STEM_SCI',
+  'HUMANITIES',
+  'SOCIAL_SCI',
+  'PROFESSIONAL',
+  'CREATIVE',
+];
 
-export type Provenance = 'MEASURED' | 'PROXIED' | 'PRIOR';
+// ============================================================================
+// VIBE SWIPER (6 paired comparisons)
+// ============================================================================
 
-export type QuestionTier = 'CORE' | 'EXTENDED' | 'DEEP' | 'EXPERT';
-
-export type SwipeDirection = 'LEFT' | 'RIGHT' | 'SKIP';
-
-export type FamiliarRarity = 'COMMON' | 'RARE' | 'LEGENDARY';
-
-export type GuildId = 'FORGE' | 'FLOW' | 'FORCE' | 'FOUNDATION';
-
-export type CourseVariant = 'STANDARD' | 'SANDWICH' | 'YEAR_ABROAD' | 'JOINT_HONOURS';
-
-export interface Question {
+export interface VibePair {
   id: string;
-  dimension: string;
-  tier: QuestionTier;
-  text: string;
-  reverse_scored: boolean;
-  weight: number;
+  pair_number: number;
+  dimension: 'environment' | 'teaching_style' | 'subject_lean' | 'focus' | 'assessment' | 'work_mode';
+  option_a: {
+    title: string;
+    description: string;
+    image_url: string;
+    tags: string[];
+  };
+  option_b: {
+    title: string;
+    description: string;
+    image_url: string;
+    tags: string[];
+  };
   active: boolean;
 }
+
+export interface VibeChoice {
+  pair_id: string;
+  option_chosen: 'A' | 'B';
+  response_time_ms?: number;
+}
+
+export interface VibeProfile {
+  environment: 'CAMPUS' | 'CITY' | 'NEUTRAL';
+  teaching_style: 'LECTURE' | 'SEMINAR' | 'MIXED';
+  subject_lean: 'STEM' | 'HUMANITIES' | 'MIXED';
+  focus: 'THEORETICAL' | 'VOCATIONAL' | 'BALANCED';
+  assessment: 'EXAM_HEAVY' | 'COURSEWORK_HEAVY' | 'MIXED';
+  work_mode: 'INDEPENDENT' | 'COLLABORATIVE' | 'FLEXIBLE';
+}
+
+// Legacy support (single card swipe format - deprecated)
+export type SwipeDirection = 'LEFT' | 'RIGHT' | 'SKIP';
 
 export interface VibeCard {
   id: string;
@@ -64,38 +111,134 @@ export interface VibeSwipe {
   direction: SwipeDirection;
 }
 
-export interface DiagnosticResponse {
-  question_id: string;
-  value: number;
-  skipped: boolean;
+// ============================================================================
+// FORCED-CHOICE SCENARIOS (20 items, slider 0-100)
+// ============================================================================
+
+export interface Scenario {
+  id: string;
+  dimension: Disposition;
+  scenario_context: string;
+  option_a: string;
+  option_b: string;
+  a_indicates: 'high' | 'low';
+  b_indicates: 'high' | 'low';
+  sort_order: number;
+  active: boolean;
+}
+
+export interface ScenarioResponse {
+  scenario_id: string;
+  position: number; // 0-100 slider position
   response_time_ms?: number;
 }
 
-export interface DispositionScore {
-  value: number;
-  sigma: number;
+// Slider scoring bands
+export type SliderBand =
+  | 'STRONG_A'    // 0-15
+  | 'MODERATE_A'  // 16-35
+  | 'LEAN_A'      // 36-50
+  | 'LEAN_B'      // 51-65
+  | 'MODERATE_B'  // 66-85
+  | 'STRONG_B';   // 86-100
+
+export function getSliderBand(position: number): SliderBand {
+  if (position <= 15) return 'STRONG_A';
+  if (position <= 35) return 'MODERATE_A';
+  if (position <= 50) return 'LEAN_A';
+  if (position <= 65) return 'LEAN_B';
+  if (position <= 85) return 'MODERATE_B';
+  return 'STRONG_B';
 }
+
+// ============================================================================
+// MINI-SAMPLE TASKS (6 tasks, one per meta-cluster)
+// ============================================================================
+
+export type MiniSampleTaskType = 'MCQ' | 'SHORT_RESPONSE';
+
+export interface MiniSampleTask {
+  id: string;
+  meta_cluster: MetaCluster;
+  task_type: MiniSampleTaskType;
+  title: string;
+  stimulus: string;
+  question: string;
+  options?: string[];           // For MCQ
+  correct_answer?: number;      // For MCQ (0-indexed option)
+  grading_criteria?: string[];  // For SHORT_RESPONSE
+  time_limit_seconds: number;   // Default 90
+  sort_order: number;
+  active: boolean;
+}
+
+export type EnjoymentRating = -1 | 0 | 1; // Hated / Fine / Loved
+
+export interface MiniSampleResponse {
+  task_id: string;
+  response: string | number;    // MCQ option index or text response
+  score: number;                // 0-3 scale
+  time_taken_seconds: number;
+  enjoyment_rating: EnjoymentRating;
+  career_fit_rating: EnjoymentRating;
+}
+
+export interface EnjoymentProfile {
+  STEM_TECH: EnjoymentRating;
+  STEM_SCI: EnjoymentRating;
+  HUMANITIES: EnjoymentRating;
+  SOCIAL_SCI: EnjoymentRating;
+  PROFESSIONAL: EnjoymentRating;
+  CREATIVE: EnjoymentRating;
+}
+
+// ============================================================================
+// PATHWAY INFERENCE
+// ============================================================================
+
+export type Pathway =
+  | 'Healthcare'
+  | 'Pure STEM'
+  | 'Arts & Humanities'
+  | 'Design & Architecture'
+  | 'Law & Professional'
+  | 'Quantitative Social Science'
+  | null;
+
+// ============================================================================
+// DISPOSITION SCORES
+// ============================================================================
+
+export interface DispositionScore {
+  value: number;   // 0-100 scale
+  sigma: number;   // Uncertainty (lower = more confident)
+}
+
+export interface DispositionProfile {
+  social: DispositionScore;
+  receptivity: DispositionScore;
+  transfer: DispositionScore;
+  structure: DispositionScore;
+  depth: DispositionScore;
+  tolerance: DispositionScore;
+  precision: DispositionScore;
+  calibration: DispositionScore;
+  retrieval: DispositionScore;
+  consistency: DispositionScore;
+}
+
+// ============================================================================
+// CAPACITIES (proxied from dispositions in MVP)
+// ============================================================================
+
+export type Capacity = 'vrb' | 'qnt' | 'spd';
+
+export type Provenance = 'MEASURED' | 'PROXIED' | 'PRIOR';
 
 export interface CapacityScore {
   value: number;
   sigma: number;
   provenance: Provenance;
-}
-
-export interface CognitiveProfile {
-  calibration: DispositionScore;
-  tolerance: DispositionScore;
-  transfer: DispositionScore;
-  precision: DispositionScore;
-  retrieval: DispositionScore;
-  receptivity: DispositionScore;
-}
-
-export interface BehavioralProfile {
-  structure: DispositionScore;
-  consistency: DispositionScore;
-  social: DispositionScore;
-  depth: DispositionScore;
 }
 
 export interface CapacityProfile {
@@ -104,37 +247,38 @@ export interface CapacityProfile {
   spd: CapacityScore;
 }
 
+// ============================================================================
+// COURSE MATCHING
+// ============================================================================
+
+export type Importance = 'CRITICAL' | 'IMPORTANT' | 'BENEFICIAL';
+export type Friction = 'LOW' | 'MODERATE' | 'HIGH' | 'VERY_HIGH' | 'EXTREME';
+
 export interface Course {
-  // Identifiers
   id: string;
   ukprn?: string;
   kis_course_id?: string;
   ucas_code?: string;
   course_url?: string;
-  
-  // Basic info
+
   university: string;
   course_name: string;
   degree_type?: string;
   duration_years?: number;
   study_mode?: string;
-  
-  // Classification
+
   cah_code?: string;
   subject_area?: string;
   subject_tags: string[];
   region?: string;
-  
-  // Quality indicators
+
   russell_group?: boolean;
   accredited?: boolean;
-  
-  // Course variants
+
   sandwich?: boolean;
   year_abroad?: boolean;
   foundation?: boolean;
-  
-  // Outcome data (HESA)
+
   nss_overall?: number;
   nss_teaching?: number;
   nss_feedback?: number;
@@ -142,43 +286,31 @@ export interface Course {
   continuation_rate?: number;
   median_salary_3yr?: number;
   median_salary_5yr?: number;
-  
-  // Teaching structure (HESA)
+
   assessment_exam_pct?: number;
   assessment_coursework_pct?: number;
   assessment_practical_pct?: number;
   scheduled_hours?: number;
-  
-  // Entry requirements
+
   typical_offer?: string;
   ucas_points?: number;
-  
+
   // Disposition demands (0-100)
-  demand_calibration: number;
-  demand_tolerance: number;
-  demand_transfer: number;
-  demand_precision: number;
-  demand_retrieval: number;
-  demand_receptivity: number;
-  demand_structure: number;
-  demand_consistency: number;
   demand_social: number;
+  demand_receptivity: number;
+  demand_transfer: number;
+  demand_structure: number;
   demand_depth: number;
-  
-  // Importance levels
-  importance_calibration: Importance;
-  importance_tolerance: Importance;
-  importance_transfer: Importance;
-  importance_precision: Importance;
-  importance_retrieval: Importance;
-  importance_receptivity: Importance;
-  
-  // Metadata
+  demand_tolerance: number;
+  demand_precision: number;
+  demand_calibration: number;
+  demand_retrieval: number;
+  demand_consistency: number;
+
   derivation_confidence?: number;
   data_completeness?: number;
   is_active?: boolean;
-  
-  // Allow additional fields from DB
+
   [key: string]: any;
 }
 
@@ -186,12 +318,22 @@ export interface MatchResult {
   course: Course;
   score: number;
   friction: Friction;
-  cognitive_score: number;
-  behavioral_penalty: number;
-  vibe_bonus: number;
+  enjoyment_score: number;
+  disposition_score: number;
   quality_bonus: number;
+  pathway_bonus: number;
+  vibe_bonus: number;
   rank: number;
+  reasons: string[];
+  challenges: string[];
 }
+
+// ============================================================================
+// GAMIFICATION (deferred for MVP)
+// ============================================================================
+
+export type FamiliarRarity = 'COMMON' | 'RARE' | 'LEGENDARY';
+export type GuildId = 'FORGE' | 'FLOW' | 'FORCE' | 'FOUNDATION';
 
 export interface Familiar {
   id: string;
@@ -215,68 +357,37 @@ export interface Guild {
   color_secondary: string;
 }
 
-// User preferences (for filtering and boosting)
-export interface UserPreferences {
-  // Vibe tags (from swiper, editable)
-  vibe_tags: string[];
-  
-  // Entry requirements
-  ucas_points_estimate?: number;
-  a_level_grades?: string[];
-  
-  // University preferences
-  target_universities?: string[];
-  excluded_universities?: string[];
-  preferred_regions?: string[];
-  
-  // Course variant preferences
-  include_sandwich?: boolean;
-  include_year_abroad?: boolean;
-  include_foundation?: boolean;
-  
-  // Study mode
-  study_mode?: 'full-time' | 'part-time' | 'both';
-  
-  // Quality filters
-  min_nss_overall?: number;
-  min_employment_rate?: number;
-  russell_group_only?: boolean;
-}
-
-export const COGNITIVE_DIMENSIONS: CognitiveDimension[] = [
-  'calibration', 'tolerance', 'transfer', 'precision', 'retrieval', 'receptivity'
-];
-
-export const BEHAVIORAL_DIMENSIONS: BehavioralDimension[] = [
-  'structure', 'consistency', 'social', 'depth'
-];
+// ============================================================================
+// CONSTANTS
+// ============================================================================
 
 export const IMPORTANCE_WEIGHTS: Record<Importance, number> = {
   CRITICAL: 1.0,
   IMPORTANT: 0.6,
-  BENEFICIAL: 0.3
+  BENEFICIAL: 0.3,
 };
 
-export const SIGMA_BY_TIER: Record<QuestionTier | 'NONE', number> = {
-  NONE: 25,
-  CORE: 15,
-  EXTENDED: 10,
-  DEEP: 6,
-  EXPERT: 3
-};
-
-// Quality bonus thresholds
 export const QUALITY_THRESHOLDS = {
   NSS_HIGH: 80,
   EMPLOYMENT_HIGH: 90,
   SALARY_HIGH: 30000,
-  CONTINUATION_LOW: 85,  // Below this suggests difficulty
+  CONTINUATION_LOW: 85,
 };
 
-// Quality bonus values (percentage points added to score)
 export const QUALITY_BONUSES = {
-  RUSSELL_GROUP: 5,
-  NSS_HIGH: 3,
-  EMPLOYMENT_HIGH: 2,
+  RUSSELL_GROUP: 15,
+  NSS_HIGH: 2,
+  EMPLOYMENT_HIGH: 3,
   SALARY_HIGH: 2,
+};
+
+export const PATHWAY_BONUS = 15;
+
+// Sigma values by tier (uncertainty)
+export const SIGMA_BY_TIER = {
+  NONE: 25,
+  CORE: 15,
+  EXTENDED: 10,
+  DEEP: 6,
+  EXPERT: 3,
 };

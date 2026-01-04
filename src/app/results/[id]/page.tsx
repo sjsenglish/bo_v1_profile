@@ -33,10 +33,145 @@ interface ProfileData {
   spd_provenance: string;
   level?: number;
   total_xp?: number;
+  precision_score?: number;
+  precision_tier?: string;
+  cluster_preferences?: Record<string, number>;
+  cluster_capabilities?: Record<string, number>;
 }
 
 interface SessionData {
   benchmarks_completed: number;
+  mini_samples_completed: boolean;
+  scenarios_completed: boolean;
+}
+
+interface MiniSampleResponse {
+  task_id: string;
+  score: number;
+  enjoyment_rating: number;
+  career_fit_rating: number;
+  bo_v1_mini_samples: {
+    meta_cluster: string;
+    title: string;
+  } | null;
+}
+
+// Early Indicators Component
+function EarlyIndicators({ miniSampleResults }: { miniSampleResults: MiniSampleResponse[] }) {
+  if (!miniSampleResults || miniSampleResults.length === 0) return null;
+
+  const CLUSTER_CONFIG = [
+    { type: 'STEM_TECH', label: 'STEM-Technical', emoji: '🔬', description: 'Computing, Engineering, Maths' },
+    { type: 'STEM_SCI', label: 'STEM-Scientific', emoji: '🧪', description: 'Sciences, Research' },
+    { type: 'HUMANITIES', label: 'Humanities', emoji: '📚', description: 'Law, History, Politics' },
+    { type: 'SOCIAL_SCI', label: 'Social Sciences', emoji: '📊', description: 'Psychology, Economics, Sociology' },
+    { type: 'PROFESSIONAL', label: 'Professional', emoji: '💼', description: 'Business, Medicine, Law' },
+    { type: 'CREATIVE', label: 'Creative', emoji: '🎨', description: 'Arts, Design, Media' },
+  ];
+
+  const ENJOYMENT_LABELS = ['😫 Challenging', '😐 Okay', '😊 Enjoyed'];
+
+  return (
+    <GlassCard className="p-6">
+      <div className="flex items-center justify-between mb-4">
+        <span className="text-[#f8f5f0]/40 text-xs uppercase tracking-wider">Early Indicators</span>
+        <span className="text-[#54acbf] text-xs">from Mini-Samples</span>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {CLUSTER_CONFIG.map(cluster => {
+          const result = miniSampleResults.find(
+            r => r.bo_v1_mini_samples?.meta_cluster === cluster.type
+          );
+
+          if (!result) return (
+            <div key={cluster.type} className="p-4 rounded-xl bg-white/[0.02] border border-white/[0.05] opacity-50">
+              <div className="text-2xl mb-2">{cluster.emoji}</div>
+              <h4 className="text-[#f8f5f0] font-medium">{cluster.label}</h4>
+              <p className="text-[#f8f5f0]/30 text-xs mt-1">Not completed</p>
+            </div>
+          );
+
+          const scorePercent = Math.round((result.score / 3) * 100);
+          const enjoymentLabel = ENJOYMENT_LABELS[result.enjoyment_rating + 1] || '😐 Okay';
+
+          return (
+            <div key={cluster.type} className="p-4 rounded-xl bg-[#54acbf]/5 border border-[#54acbf]/20">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-2xl">{cluster.emoji}</span>
+                <span className={`text-sm font-medium ${
+                  scorePercent >= 70 ? 'text-[#4ade80]' :
+                  scorePercent >= 40 ? 'text-[#54acbf]' : 'text-[#f97316]'
+                }`}>
+                  {scorePercent}%
+                </span>
+              </div>
+              <h4 className="text-[#f8f5f0] font-medium mb-1">{cluster.label}</h4>
+              <p className="text-[#f8f5f0]/40 text-xs mb-3">{cluster.description}</p>
+              <div className="flex items-center gap-2">
+                <span className="text-xs">{enjoymentLabel}</span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </GlassCard>
+  );
+}
+
+// Sharpening CTAs Component
+function SharpeningCTAs({ precisionScore }: { precisionScore: number }) {
+  const activities = [
+    { name: 'Reasoning Challenges', time: '~4 min', precision: '+15%', icon: '🧩', available: true },
+    { name: 'Speed Challenge', time: '~3 min', precision: '+10%', icon: '⚡', available: false },
+    { name: 'More Scenarios', time: '~4 min', precision: '+12%', icon: '🎯', available: false },
+    { name: 'Challenge Mini-Samples', time: '~3 min', precision: '+8%', icon: '🔥', available: false },
+  ];
+
+  return (
+    <GlassCard className="p-5">
+      <div className="flex items-center justify-between mb-4">
+        <span className="text-[#f8f5f0]/40 text-xs uppercase tracking-wider">Sharpen Profile</span>
+        <span className="text-[#54acbf] text-xs">{precisionScore || 40}% precision</span>
+      </div>
+
+      <div className="space-y-2">
+        {activities.map((activity, i) => (
+          <div
+            key={i}
+            className={`
+              p-3 rounded-xl border transition-all
+              ${activity.available
+                ? 'bg-[#54acbf]/10 border-[#54acbf]/30 cursor-pointer hover:bg-[#54acbf]/20'
+                : 'bg-white/[0.02] border-white/[0.05] opacity-60'}
+            `}
+          >
+            <div className="flex items-center gap-3">
+              <span className="text-lg">{activity.icon}</span>
+              <div className="flex-1">
+                <p className={`text-sm font-medium ${activity.available ? 'text-[#f8f5f0]' : 'text-[#f8f5f0]/50'}`}>
+                  {activity.name}
+                </p>
+                <p className="text-[#f8f5f0]/30 text-xs">{activity.time}</p>
+              </div>
+              <span className={`text-xs font-medium ${activity.available ? 'text-[#4ade80]' : 'text-[#f8f5f0]/30'}`}>
+                {activity.precision}
+              </span>
+            </div>
+            {!activity.available && (
+              <p className="text-[#f8f5f0]/20 text-xs mt-2 ml-8">Coming soon</p>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {precisionScore < 70 && (
+        <p className="text-[#54acbf]/60 text-xs text-center mt-4">
+          Reach 70% to unlock your Familiar & Guild
+        </p>
+      )}
+    </GlassCard>
+  );
 }
 
 interface MatchData {
@@ -582,6 +717,7 @@ export default function ResultsPage() {
   const [matches, setMatches] = useState<MatchData[]>([]);
   const [capacityResults, setCapacityResults] = useState<CapacityResults | null>(null);
   const [supercurriculars, setSupercurriculars] = useState<Supercurricular[]>([]);
+  const [miniSampleResults, setMiniSampleResults] = useState<MiniSampleResponse[]>([]);
   const [expandedCourse, setExpandedCourse] = useState<number | null>(null);
   const [showAllCourses, setShowAllCourses] = useState(false);
   const [pinnedCourses, setPinnedCourses] = useState<string[]>([]);
@@ -600,10 +736,35 @@ export default function ResultsPage() {
 
         const { data: sessionData } = await supabase
           .from('bo_v1_sessions')
-          .select('benchmarks_completed')
+          .select('benchmarks_completed, mini_samples_completed, scenarios_completed')
           .eq('id', sessionId)
           .single();
         setSession(sessionData);
+
+        // Fetch mini-sample results for Early Indicators
+        const { data: miniSampleData } = await supabase
+          .from('bo_v1_mini_sample_responses')
+          .select(`
+            task_id,
+            score,
+            enjoyment_rating,
+            career_fit_rating,
+            bo_v1_mini_samples (meta_cluster, title)
+          `)
+          .eq('session_id', sessionId);
+        if (miniSampleData) {
+          // Transform the data to flatten the join result
+          const transformed = miniSampleData.map((item: any) => ({
+            task_id: item.task_id,
+            score: item.score,
+            enjoyment_rating: item.enjoyment_rating,
+            career_fit_rating: item.career_fit_rating,
+            bo_v1_mini_samples: Array.isArray(item.bo_v1_mini_samples)
+              ? item.bo_v1_mini_samples[0]
+              : item.bo_v1_mini_samples
+          }));
+          setMiniSampleResults(transformed);
+        }
 
         const { data: capData } = await supabase
           .from('bo_v1_capacity_results')
@@ -769,17 +930,35 @@ export default function ResultsPage() {
             )}
           </GlassCard>
 
-          {/* Profile Card */}
+          {/* Profile Card - with locked state at low precision */}
           <GlassCard className="p-5">
             <div className="flex flex-col items-center text-center">
-              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#54acbf]/20 to-[#54acbf]/5 border border-[#54acbf]/20 flex items-center justify-center mb-4">
-                <span className="text-4xl">{familiar?.emoji || '🎓'}</span>
-              </div>
-              <h3 className="text-[#f8f5f0] font-semibold text-lg">{familiar?.name || 'Scholar'}</h3>
-              <p className="text-[#54acbf]/60 text-sm mt-1">{familiar?.tagline || 'Knowledge Seeker'}</p>
-              <div className="mt-4 px-3 py-1.5 bg-[#54acbf]/10 rounded-full border border-[#54acbf]/20">
-                <span className="text-[#54acbf] text-xs font-medium">Level {level}</span>
-              </div>
+              {(profile.precision_score || 40) >= 70 ? (
+                <>
+                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#54acbf]/20 to-[#54acbf]/5 border border-[#54acbf]/20 flex items-center justify-center mb-4">
+                    <span className="text-4xl">🎓</span>
+                  </div>
+                  <h3 className="text-[#f8f5f0] font-semibold text-lg">{familiar?.name || 'Scholar'}</h3>
+                  <p className="text-[#54acbf]/60 text-sm mt-1">{familiar?.tagline || 'Knowledge Seeker'}</p>
+                  <div className="mt-4 px-3 py-1.5 bg-[#54acbf]/10 rounded-full border border-[#54acbf]/20">
+                    <span className="text-[#54acbf] text-xs font-medium">Level {level}</span>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="w-20 h-20 rounded-2xl bg-white/[0.03] border border-white/[0.08] flex items-center justify-center mb-4 relative">
+                    <span className="text-4xl opacity-30 blur-sm">🎓</span>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="text-2xl">🔒</span>
+                    </div>
+                  </div>
+                  <h3 className="text-[#f8f5f0]/50 font-semibold text-lg">Familiar Locked</h3>
+                  <p className="text-[#f8f5f0]/30 text-sm mt-1">Reach 70% precision to unlock</p>
+                  <div className="mt-4 px-3 py-1.5 bg-white/[0.03] rounded-full border border-white/[0.08]">
+                    <span className="text-[#f8f5f0]/30 text-xs font-medium">{profile.precision_score || 40}% precision</span>
+                  </div>
+                </>
+              )}
             </div>
           </GlassCard>
 
@@ -813,6 +992,9 @@ export default function ResultsPage() {
               ))}
             </div>
           </GlassCard>
+
+          {/* Sharpening CTAs */}
+          <SharpeningCTAs precisionScore={profile.precision_score || 40} />
         </aside>
 
         {/* ========== MAIN CONTENT ========== */}
@@ -848,6 +1030,9 @@ export default function ResultsPage() {
 
           {/* Tutor Message */}
           <TutorMessage message={tutorMessage} />
+
+          {/* Early Indicators from Mini-Samples */}
+          <EarlyIndicators miniSampleResults={miniSampleResults} />
 
           {/* Course Matches */}
           <div>

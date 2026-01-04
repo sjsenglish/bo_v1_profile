@@ -1,143 +1,167 @@
+// ExamRizz Arena v9 - Scoring Logic (Overhauled Jan 4, 2025)
+
 import {
-  Question,
-  DiagnosticResponse,
+  Disposition,
+  ALL_DISPOSITIONS,
   DispositionScore,
-  CognitiveProfile,
-  BehavioralProfile,
+  DispositionProfile,
   CapacityProfile,
-  VibeCard,
-  VibeSwipe,
-  COGNITIVE_DIMENSIONS,
-  BEHAVIORAL_DIMENSIONS,
+  ScenarioResponse,
+  Scenario,
+  MiniSampleResponse,
+  EnjoymentProfile,
+  EnjoymentRating,
+  MetaCluster,
+  ALL_META_CLUSTERS,
+  Pathway,
   SIGMA_BY_TIER,
-  CognitiveDimension,
+  PATHWAY_BONUS,
 } from './types';
 
-function groupByDimension(
-  responses: DiagnosticResponse[],
-  questions: Question[]
-): Map<string, { value: number; weight: number; reverse: boolean }[]> {
-  const grouped = new Map<string, { value: number; weight: number; reverse: boolean }[]>();
+// ============================================================================
+// SCENARIO SCORING (20 forced-choice items with slider 0-100)
+// ============================================================================
 
+/**
+ * Score scenarios based on slider positions (0-100).
+ * Each scenario contributes to one disposition dimension.
+ *
+ * Scoring bands:
+ * - Strong A (0-15): +40 to A-direction
+ * - Moderate A (16-35): +25 to A-direction
+ * - Lean A (36-50): +10 to A-direction
+ * - Lean B (51-65): +10 to B-direction
+ * - Moderate B (66-85): +25 to B-direction
+ * - Strong B (86-100): +40 to B-direction
+ *
+ * With 2 items per dimension, scores range from ~20-80.
+ */
+export function scoreScenarios(
+  responses: ScenarioResponse[],
+  scenarios: Scenario[]
+): DispositionProfile {
+  // Initialize all dimensions at 50 (neutral)
+  const profile: DispositionProfile = {
+    social: { value: 50, sigma: SIGMA_BY_TIER.CORE },
+    receptivity: { value: 50, sigma: SIGMA_BY_TIER.CORE },
+    transfer: { value: 50, sigma: SIGMA_BY_TIER.CORE },
+    structure: { value: 50, sigma: SIGMA_BY_TIER.CORE },
+    depth: { value: 50, sigma: SIGMA_BY_TIER.CORE },
+    tolerance: { value: 50, sigma: SIGMA_BY_TIER.CORE },
+    precision: { value: 50, sigma: SIGMA_BY_TIER.CORE },
+    calibration: { value: 50, sigma: SIGMA_BY_TIER.CORE },
+    retrieval: { value: 50, sigma: SIGMA_BY_TIER.CORE },
+    consistency: { value: 50, sigma: SIGMA_BY_TIER.CORE },
+  };
+
+  // Track item count per dimension for averaging
+  const itemCounts: Record<Disposition, number> = {
+    social: 0,
+    receptivity: 0,
+    transfer: 0,
+    structure: 0,
+    depth: 0,
+    tolerance: 0,
+    precision: 0,
+    calibration: 0,
+    retrieval: 0,
+    consistency: 0,
+  };
+
+  // Process each response
   for (const response of responses) {
-    if (response.skipped) continue;
+    const scenario = scenarios.find((s) => s.id === response.scenario_id);
+    if (!scenario) continue;
 
-    const question = questions.find(q => q.id === response.question_id);
-    if (!question) continue;
+    const dimension = scenario.dimension as Disposition;
+    if (!ALL_DISPOSITIONS.includes(dimension)) continue;
 
-    const dim = question.dimension.toLowerCase();
-    if (!grouped.has(dim)) {
-      grouped.set(dim, []);
+    // Calculate delta based on slider position
+    const position = response.position;
+    let delta = 0;
+
+    if (position <= 15) {
+      // Strong A
+      delta = scenario.a_indicates === 'high' ? 20 : -20;
+    } else if (position <= 35) {
+      // Moderate A
+      delta = scenario.a_indicates === 'high' ? 12.5 : -12.5;
+    } else if (position <= 50) {
+      // Lean A
+      delta = scenario.a_indicates === 'high' ? 5 : -5;
+    } else if (position <= 65) {
+      // Lean B
+      delta = scenario.b_indicates === 'high' ? 5 : -5;
+    } else if (position <= 85) {
+      // Moderate B
+      delta = scenario.b_indicates === 'high' ? 12.5 : -12.5;
+    } else {
+      // Strong B
+      delta = scenario.b_indicates === 'high' ? 20 : -20;
     }
 
-    grouped.get(dim)!.push({
-      value: response.value,
-      weight: question.weight,
-      reverse: question.reverse_scored,
-    });
+    // Apply delta
+    profile[dimension] = {
+      value: Math.max(0, Math.min(100, profile[dimension].value + delta)),
+      sigma: profile[dimension].sigma,
+    };
+    itemCounts[dimension]++;
   }
 
-  return grouped;
-}
-
-function calculateDimensionScore(
-  responses: { value: number; weight: number; reverse: boolean }[]
-): DispositionScore {
-  if (responses.length === 0) {
-    return { value: 50, sigma: SIGMA_BY_TIER.NONE };
-  }
-
-  let weightedSum = 0;
-  let totalWeight = 0;
-
-  for (const r of responses) {
-    let score = (r.value - 1) * 25;
-    if (r.reverse) {
-      score = 100 - score;
-    }
-    weightedSum += score * r.weight;
-    totalWeight += r.weight;
-  }
-
-  const value = Math.round(weightedSum / totalWeight);
-
-  let sigma: number;
-  if (responses.length >= 4) {
-    sigma = SIGMA_BY_TIER.CORE;
-  } else if (responses.length >= 2) {
-    sigma = 18;
-  } else {
-    sigma = 22;
-  }
-
-  return { value, sigma };
-}
-
-export function scoreCognitive(
-  responses: DiagnosticResponse[],
-  questions: Question[]
-): CognitiveProfile {
-  const grouped = groupByDimension(responses, questions);
-
-  const profile: CognitiveProfile = {
-    calibration: { value: 50, sigma: SIGMA_BY_TIER.NONE },
-    tolerance: { value: 50, sigma: SIGMA_BY_TIER.NONE },
-    transfer: { value: 50, sigma: SIGMA_BY_TIER.NONE },
-    precision: { value: 50, sigma: SIGMA_BY_TIER.NONE },
-    retrieval: { value: 50, sigma: SIGMA_BY_TIER.NONE },
-    receptivity: { value: 50, sigma: SIGMA_BY_TIER.NONE },
-  };
-
-  for (const dim of COGNITIVE_DIMENSIONS) {
-    const dimData = grouped.get(dim);
-    if (dimData) {
-      profile[dim] = calculateDimensionScore(dimData);
+  // Reduce sigma for dimensions with more items
+  for (const dim of ALL_DISPOSITIONS) {
+    if (itemCounts[dim] >= 2) {
+      profile[dim].sigma = SIGMA_BY_TIER.EXTENDED;
+    } else if (itemCounts[dim] === 1) {
+      profile[dim].sigma = SIGMA_BY_TIER.CORE;
     }
   }
 
   return profile;
 }
 
-export function scoreBehavioral(
-  responses: DiagnosticResponse[],
-  questions: Question[]
-): BehavioralProfile {
-  const grouped = groupByDimension(responses, questions);
+/**
+ * Score scenarios from binary A/B choices (fallback for non-slider UI).
+ * Each A/B choice contributes ±12 to the dimension.
+ */
+export function scoreScenariosFromBinary(
+  responses: { scenario_id: string; choice: 'A' | 'B' }[],
+  scenarios: Scenario[]
+): DispositionProfile {
+  // Convert binary choices to slider positions
+  const sliderResponses: ScenarioResponse[] = responses.map((r) => ({
+    scenario_id: r.scenario_id,
+    position: r.choice === 'A' ? 25 : 75, // Moderate A or Moderate B
+  }));
 
-  const profile: BehavioralProfile = {
-    structure: { value: 50, sigma: SIGMA_BY_TIER.NONE },
-    consistency: { value: 50, sigma: SIGMA_BY_TIER.NONE },
-    social: { value: 50, sigma: SIGMA_BY_TIER.NONE },
-    depth: { value: 50, sigma: SIGMA_BY_TIER.NONE },
-  };
-
-  for (const dim of BEHAVIORAL_DIMENSIONS) {
-    const dimData = grouped.get(dim);
-    if (dimData) {
-      profile[dim] = calculateDimensionScore(dimData);
-    }
-  }
-
-  return profile;
+  return scoreScenarios(sliderResponses, scenarios);
 }
 
-export function proxyCapacities(cognitive: CognitiveProfile): CapacityProfile {
+// ============================================================================
+// CAPACITY PROXYING
+// ============================================================================
+
+/**
+ * Proxy cognitive capacities from disposition scores.
+ * Used when actual benchmark tests haven't been completed.
+ */
+export function proxyCapacities(profile: DispositionProfile): CapacityProfile {
   const vrb = Math.round(
-    cognitive.transfer.value * 0.4 +
-    cognitive.calibration.value * 0.3 +
-    cognitive.retrieval.value * 0.3
+    profile.transfer.value * 0.4 +
+      profile.calibration.value * 0.3 +
+      profile.retrieval.value * 0.3
   );
 
   const qnt = Math.round(
-    cognitive.precision.value * 0.5 +
-    cognitive.calibration.value * 0.3 +
-    cognitive.transfer.value * 0.2
+    profile.precision.value * 0.5 +
+      profile.calibration.value * 0.3 +
+      profile.transfer.value * 0.2
   );
 
   const spd = Math.round(
-    cognitive.calibration.value * 0.4 +
-    cognitive.precision.value * 0.3 +
-    cognitive.tolerance.value * 0.3
+    profile.calibration.value * 0.4 +
+      profile.precision.value * 0.3 +
+      profile.tolerance.value * 0.3
   );
 
   return {
@@ -147,86 +171,302 @@ export function proxyCapacities(cognitive: CognitiveProfile): CapacityProfile {
   };
 }
 
-export interface VibeResult {
-  tags: string[];
-  dispositionNudges: Record<string, number>;
-}
+// ============================================================================
+// MINI-SAMPLE SCORING & ENJOYMENT
+// ============================================================================
 
-export function processVibeSwipes(
-  swipes: VibeSwipe[],
-  cards: VibeCard[]
-): VibeResult {
-  const tagCounts = new Map<string, number>();
-  const nudges: Record<string, number> = {};
+/**
+ * Build enjoyment profile from mini-sample responses.
+ * Uses the enjoyment_rating from each task.
+ */
+export function buildEnjoymentProfile(
+  responses: MiniSampleResponse[]
+): EnjoymentProfile {
+  const profile: EnjoymentProfile = {
+    STEM_TECH: 0,
+    STEM_SCI: 0,
+    HUMANITIES: 0,
+    SOCIAL_SCI: 0,
+    PROFESSIONAL: 0,
+    CREATIVE: 0,
+  };
 
-  for (const swipe of swipes) {
-    if (swipe.direction === 'SKIP') continue;
-
-    const card = cards.find(c => c.id === swipe.card_id);
-    if (!card) continue;
-
-    const tags = swipe.direction === 'RIGHT' ? card.right_tags : card.left_tags;
-    for (const tag of tags) {
-      tagCounts.set(tag, (tagCounts.get(tag) || 0) + 1);
-    }
-
-    if (card.disposition_nudge) {
-      const dim = card.disposition_nudge.dimension.toLowerCase();
-      const delta = swipe.direction === 'RIGHT'
-        ? card.disposition_nudge.right_delta
-        : card.disposition_nudge.left_delta;
-      nudges[dim] = (nudges[dim] || 0) + delta;
+  for (const response of responses) {
+    // Map task_id to meta_cluster (assuming task_id contains cluster info)
+    const cluster = inferClusterFromTaskId(response.task_id);
+    if (cluster && ALL_META_CLUSTERS.includes(cluster)) {
+      profile[cluster] = response.enjoyment_rating;
     }
   }
 
-  const sortedTags = Array.from(tagCounts.entries())
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 8)
-    .map(([tag]) => tag);
-
-  for (const dim in nudges) {
-    nudges[dim] = Math.max(-15, Math.min(15, nudges[dim]));
-  }
-
-  return { tags: sortedTags, dispositionNudges: nudges };
+  return profile;
 }
 
-export function applyVibeNudges(
-  cognitive: CognitiveProfile,
-  nudges: Record<string, number>
-): CognitiveProfile {
-  const result = { ...cognitive };
+/**
+ * Infer meta-cluster from task ID.
+ * Task IDs should follow pattern like 'STEM_TECH_01', 'HUMANITIES_01', etc.
+ */
+function inferClusterFromTaskId(taskId: string): MetaCluster | null {
+  const upper = taskId.toUpperCase();
+  if (upper.includes('STEM_TECH') || upper.includes('CODE') || upper.includes('DEBUG')) {
+    return 'STEM_TECH';
+  }
+  if (upper.includes('STEM_SCI') || upper.includes('OBSERVATION') || upper.includes('SCIENCE')) {
+    return 'STEM_SCI';
+  }
+  if (upper.includes('HUMANITIES') || upper.includes('ARGUMENT') || upper.includes('HISTORY')) {
+    return 'HUMANITIES';
+  }
+  if (upper.includes('SOCIAL_SCI') || upper.includes('ASSUMPTION') || upper.includes('POLICY')) {
+    return 'SOCIAL_SCI';
+  }
+  if (upper.includes('PROFESSIONAL') || upper.includes('COMPETING') || upper.includes('DOCTOR')) {
+    return 'PROFESSIONAL';
+  }
+  if (upper.includes('CREATIVE') || upper.includes('DESIGN') || upper.includes('POSTER')) {
+    return 'CREATIVE';
+  }
+  return null;
+}
 
-  for (const dim of COGNITIVE_DIMENSIONS) {
-    if (nudges[dim]) {
-      const current = result[dim];
-      result[dim] = {
-        value: Math.max(0, Math.min(100, current.value + nudges[dim])),
-        sigma: current.sigma,
-      };
+/**
+ * Calculate enjoyment score for a course based on cluster alignment.
+ * Max enjoyment score: 60 points.
+ */
+export function calculateEnjoymentScore(
+  enjoymentProfile: EnjoymentProfile,
+  courseClusterTags: string[]
+): number {
+  let score = 0;
+  const tags = new Set(courseClusterTags.map((t) => t.toUpperCase()));
+
+  // Check each cluster's enjoyment rating against course tags
+  if (enjoymentProfile.STEM_TECH === 1 && (tags.has('STEM') || tags.has('COMPUTING') || tags.has('ENGINEERING'))) {
+    score += 10;
+  } else if (enjoymentProfile.STEM_TECH === -1 && (tags.has('STEM') || tags.has('COMPUTING'))) {
+    score -= 10;
+  }
+
+  if (enjoymentProfile.STEM_SCI === 1 && (tags.has('SCIENCE') || tags.has('BIOLOGY') || tags.has('CHEMISTRY') || tags.has('PHYSICS'))) {
+    score += 10;
+  } else if (enjoymentProfile.STEM_SCI === -1 && (tags.has('SCIENCE') || tags.has('BIOLOGY'))) {
+    score -= 10;
+  }
+
+  if (enjoymentProfile.HUMANITIES === 1 && (tags.has('HUMANITIES') || tags.has('HISTORY') || tags.has('ENGLISH') || tags.has('PHILOSOPHY'))) {
+    score += 10;
+  } else if (enjoymentProfile.HUMANITIES === -1 && tags.has('HUMANITIES')) {
+    score -= 10;
+  }
+
+  if (enjoymentProfile.SOCIAL_SCI === 1 && (tags.has('PSYCHOLOGY') || tags.has('ECONOMICS') || tags.has('SOCIOLOGY') || tags.has('POLITICS'))) {
+    score += 10;
+  } else if (enjoymentProfile.SOCIAL_SCI === -1 && tags.has('PSYCHOLOGY')) {
+    score -= 10;
+  }
+
+  if (enjoymentProfile.PROFESSIONAL === 1 && (tags.has('LAW') || tags.has('BUSINESS') || tags.has('MEDICINE') || tags.has('EDUCATION'))) {
+    score += 10;
+  } else if (enjoymentProfile.PROFESSIONAL === -1 && (tags.has('LAW') || tags.has('BUSINESS'))) {
+    score -= 10;
+  }
+
+  if (enjoymentProfile.CREATIVE === 1 && (tags.has('ART') || tags.has('DESIGN') || tags.has('ARCHITECTURE') || tags.has('MEDIA'))) {
+    score += 10;
+  } else if (enjoymentProfile.CREATIVE === -1 && (tags.has('ART') || tags.has('DESIGN'))) {
+    score -= 10;
+  }
+
+  // Normalize to 0-60 range
+  return Math.max(0, Math.min(60, score + 30));
+}
+
+// ============================================================================
+// PATHWAY INFERENCE
+// ============================================================================
+
+/**
+ * Detect career pathway from enjoyment profile.
+ * Pathway is detected when ≥2 of the required clusters were loved (rating = 1)
+ * and none were hated (rating = -1).
+ */
+export function detectPathway(enjoymentProfile: EnjoymentProfile): Pathway {
+  const loved = new Set<MetaCluster>();
+  const hated = new Set<MetaCluster>();
+
+  for (const [cluster, rating] of Object.entries(enjoymentProfile)) {
+    if (rating === 1) loved.add(cluster as MetaCluster);
+    if (rating === -1) hated.add(cluster as MetaCluster);
+  }
+
+  // Healthcare: STEM_SCI + SOCIAL_SCI + PROFESSIONAL
+  if (
+    loved.has('STEM_SCI') &&
+    loved.has('SOCIAL_SCI') &&
+    loved.has('PROFESSIONAL') &&
+    !hated.has('STEM_SCI') &&
+    !hated.has('SOCIAL_SCI') &&
+    !hated.has('PROFESSIONAL')
+  ) {
+    return 'Healthcare';
+  }
+
+  // Pure STEM: STEM_TECH + STEM_SCI
+  if (
+    loved.has('STEM_TECH') &&
+    loved.has('STEM_SCI') &&
+    !hated.has('STEM_TECH') &&
+    !hated.has('STEM_SCI')
+  ) {
+    return 'Pure STEM';
+  }
+
+  // Quantitative Social Science: STEM_TECH + SOCIAL_SCI
+  if (
+    loved.has('STEM_TECH') &&
+    loved.has('SOCIAL_SCI') &&
+    !hated.has('STEM_TECH') &&
+    !hated.has('SOCIAL_SCI')
+  ) {
+    return 'Quantitative Social Science';
+  }
+
+  // Design & Architecture: STEM_TECH + CREATIVE
+  if (
+    loved.has('STEM_TECH') &&
+    loved.has('CREATIVE') &&
+    !hated.has('STEM_TECH') &&
+    !hated.has('CREATIVE')
+  ) {
+    return 'Design & Architecture';
+  }
+
+  // Arts & Humanities: HUMANITIES + SOCIAL_SCI + CREATIVE
+  if (
+    loved.has('HUMANITIES') &&
+    (loved.has('SOCIAL_SCI') || loved.has('CREATIVE')) &&
+    !hated.has('HUMANITIES')
+  ) {
+    return 'Arts & Humanities';
+  }
+
+  // Law & Professional: SOCIAL_SCI + PROFESSIONAL + HUMANITIES
+  if (
+    loved.has('SOCIAL_SCI') &&
+    loved.has('PROFESSIONAL') &&
+    (loved.has('HUMANITIES') || !hated.has('HUMANITIES'))
+  ) {
+    return 'Law & Professional';
+  }
+
+  return null;
+}
+
+/**
+ * Check if course matches detected pathway.
+ * Returns PATHWAY_BONUS (15) if match, 0 otherwise.
+ */
+export function calculatePathwayBonus(
+  pathway: Pathway,
+  courseCahCode: string | undefined
+): number {
+  if (!pathway || !courseCahCode) return 0;
+
+  const cah = courseCahCode.toUpperCase();
+
+  switch (pathway) {
+    case 'Healthcare':
+      // CAH01 = Medicine/Dentistry/Nursing
+      if (cah.startsWith('CAH01')) return PATHWAY_BONUS;
+      break;
+    case 'Pure STEM':
+      // CAH07 = Sciences, CAH09 = Engineering, CAH10 = Maths/Computing
+      if (cah.startsWith('CAH07') || cah.startsWith('CAH09') || cah.startsWith('CAH10')) {
+        return PATHWAY_BONUS;
+      }
+      break;
+    case 'Quantitative Social Science':
+      // CAH17 = Economics, CAH04 = Psychology
+      if (cah.startsWith('CAH17') || cah.startsWith('CAH04')) return PATHWAY_BONUS;
+      break;
+    case 'Design & Architecture':
+      // CAH13 = Architecture
+      if (cah.startsWith('CAH13')) return PATHWAY_BONUS;
+      break;
+    case 'Arts & Humanities':
+      // CAH14 = Languages, CAH20 = History, CAH21 = Arts
+      if (cah.startsWith('CAH14') || cah.startsWith('CAH20') || cah.startsWith('CAH21')) {
+        return PATHWAY_BONUS;
+      }
+      break;
+    case 'Law & Professional':
+      // CAH16 = Law
+      if (cah.startsWith('CAH16')) return PATHWAY_BONUS;
+      break;
+  }
+
+  return 0;
+}
+
+// ============================================================================
+// DISPOSITION FRICTION
+// ============================================================================
+
+/**
+ * Calculate disposition friction for a course.
+ * Friction comes from gaps between student disposition and course demand.
+ *
+ * - FLOOR dimensions (calibration, tolerance, precision, retrieval):
+ *   Student must meet or exceed course demand. Shortfall = friction.
+ * - FIT dimensions (transfer, receptivity, structure, social, depth, consistency):
+ *   Misalignment in either direction creates friction.
+ */
+export function calculateDispositionFriction(
+  studentProfile: DispositionProfile,
+  courseDemands: Record<string, number>
+): number {
+  let friction = 0;
+
+  // FLOOR dimensions - student should meet or exceed demand
+  const floorDims: Disposition[] = ['calibration', 'tolerance', 'precision', 'retrieval'];
+  for (const dim of floorDims) {
+    const studentValue = studentProfile[dim].value;
+    const demand = courseDemands[`demand_${dim}`] || 50;
+    const gap = demand - studentValue;
+    if (gap > 0) {
+      friction += gap * 0.3; // 30% of gap becomes friction
     }
   }
 
-  return result;
+  // FIT dimensions - misalignment creates friction
+  const fitDims: Disposition[] = ['transfer', 'receptivity', 'structure', 'social', 'depth', 'consistency'];
+  for (const dim of fitDims) {
+    const studentValue = studentProfile[dim].value;
+    const demand = courseDemands[`demand_${dim}`] || 50;
+    const gap = Math.abs(demand - studentValue);
+    if (gap > 40) {
+      // Only penalize large misalignments
+      friction += (gap - 40) * 0.1;
+    }
+  }
+
+  return friction;
 }
 
-export function findDominant(
-  cognitive: CognitiveProfile,
-  behavioral: BehavioralProfile
-): string {
-  let maxDim = 'calibration';
+// ============================================================================
+// PROFILE ANALYSIS
+// ============================================================================
+
+/**
+ * Find the dominant disposition (highest scoring).
+ */
+export function findDominant(profile: DispositionProfile): Disposition {
+  let maxDim: Disposition = 'calibration';
   let maxValue = 0;
 
-  for (const dim of COGNITIVE_DIMENSIONS) {
-    if (cognitive[dim].value > maxValue) {
-      maxValue = cognitive[dim].value;
-      maxDim = dim;
-    }
-  }
-
-  for (const dim of BEHAVIORAL_DIMENSIONS) {
-    if (behavioral[dim].value > maxValue) {
-      maxValue = behavioral[dim].value;
+  for (const dim of ALL_DISPOSITIONS) {
+    if (profile[dim].value > maxValue) {
+      maxValue = profile[dim].value;
       maxDim = dim;
     }
   }
@@ -234,26 +474,49 @@ export function findDominant(
   return maxDim;
 }
 
-export function findNemesis(
-  cognitive: CognitiveProfile,
-  behavioral: BehavioralProfile
-): string {
-  let minDim = 'calibration';
+/**
+ * Find the nemesis disposition (lowest scoring).
+ */
+export function findNemesis(profile: DispositionProfile): Disposition {
+  let minDim: Disposition = 'calibration';
   let minValue = 100;
 
-  for (const dim of COGNITIVE_DIMENSIONS) {
-    if (cognitive[dim].value < minValue) {
-      minValue = cognitive[dim].value;
-      minDim = dim;
-    }
-  }
-
-  for (const dim of BEHAVIORAL_DIMENSIONS) {
-    if (behavioral[dim].value < minValue) {
-      minValue = behavioral[dim].value;
+  for (const dim of ALL_DISPOSITIONS) {
+    if (profile[dim].value < minValue) {
+      minValue = profile[dim].value;
       minDim = dim;
     }
   }
 
   return minDim;
+}
+
+/**
+ * Get disposition value by name.
+ */
+export function getDispositionValue(
+  profile: DispositionProfile,
+  dimension: Disposition
+): number {
+  return profile[dimension]?.value ?? 50;
+}
+
+/**
+ * Calculate overall profile confidence.
+ * Lower average sigma = higher confidence.
+ */
+export function calculateProfileConfidence(profile: DispositionProfile): number {
+  let totalSigma = 0;
+  for (const dim of ALL_DISPOSITIONS) {
+    totalSigma += profile[dim].sigma;
+  }
+  const avgSigma = totalSigma / ALL_DISPOSITIONS.length;
+
+  // Convert sigma to confidence percentage (lower sigma = higher confidence)
+  // sigma=25 (no data) → ~20% confidence
+  // sigma=15 (core) → ~40% confidence
+  // sigma=10 (extended) → ~60% confidence
+  // sigma=6 (deep) → ~76% confidence
+  // sigma=3 (expert) → ~88% confidence
+  return Math.max(0, Math.min(100, 100 - avgSigma * 3.2));
 }
