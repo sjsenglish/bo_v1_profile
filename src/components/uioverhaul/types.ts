@@ -64,18 +64,17 @@ export interface UserProfile {
 
 
 export interface ScenarioOption {
+    id: string;
     label: string;
-    value: number;
-    color: string;
+    indicates?: string;
 }
 
 export interface Scenario {
-    id: number;
-    title: string;
-    description: string;
-    question?: string; // Optional if not always used
-    options: ScenarioOption[];
-    trait: string;
+    id: string;
+    dimension: string;
+    question: string;
+    optionA: ScenarioOption;
+    optionB: ScenarioOption;
 }
 
 export interface VibeOption {

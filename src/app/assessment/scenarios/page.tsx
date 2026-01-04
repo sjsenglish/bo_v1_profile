@@ -4,211 +4,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { getInitialState, saveState, addScenarioResponse } from '@/lib/assessment';
-import { ScenarioResponse, Scenario } from '@/lib/types';
+import { ScenarioResponse } from '@/lib/types';
 import { supabase } from '@/lib/supabase';
-
-// 20 scenarios - 2 per dimension (10 dimensions)
-const SCENARIOS = [
-  // SOCIAL (2 items)
-  {
-    id: 'social_1',
-    question: "It's 10pm and you're stuck on a problem set that's due tomorrow morning.",
-    option_a: "Message the group chat to see if anyone's figured it out.",
-    option_b: "Grind through it alone — you'll learn more that way.",
-    dimension: 'social',
-    a_indicates: 'high',
-    b_indicates: 'low',
-  },
-  {
-    id: 'social_2',
-    question: "You're revising for a big exam next week.",
-    option_a: "Organise a study group to quiz each other.",
-    option_b: "Find a quiet corner and work through past papers solo.",
-    dimension: 'social',
-    a_indicates: 'high',
-    b_indicates: 'low',
-  },
-
-  // RECEPTIVITY (2 items)
-  {
-    id: 'receptivity_1',
-    question: "You receive harsh feedback on a draft essay from your teacher.",
-    option_a: "Defend your approach and explain why you made those choices.",
-    option_b: "Accept it immediately and rewrite the section completely.",
-    dimension: 'receptivity',
-    a_indicates: 'low',
-    b_indicates: 'high',
-  },
-  {
-    id: 'receptivity_2',
-    question: "A classmate suggests your project approach is fundamentally flawed.",
-    option_a: "Listen carefully and consider completely changing direction.",
-    option_b: "Explain your reasoning — you've thought this through.",
-    dimension: 'receptivity',
-    a_indicates: 'high',
-    b_indicates: 'low',
-  },
-
-  // TRANSFER (2 items)
-  {
-    id: 'transfer_1',
-    question: "You encounter a new type of problem you've never seen before.",
-    option_a: "Look for patterns from other subjects that might apply.",
-    option_b: "Find the specific formula or method for this exact problem type.",
-    dimension: 'transfer',
-    a_indicates: 'high',
-    b_indicates: 'low',
-  },
-  {
-    id: 'transfer_2',
-    question: "Your biology teacher asks you to explain osmosis.",
-    option_a: "Use an analogy from everyday life or another subject.",
-    option_b: "Stick to the precise scientific definition and terminology.",
-    dimension: 'transfer',
-    a_indicates: 'high',
-    b_indicates: 'low',
-  },
-
-  // STRUCTURE (2 items)
-  {
-    id: 'structure_1',
-    question: "You have to choose an EPQ topic.",
-    option_a: "Pick something practical with a clear, definite answer.",
-    option_b: "Pick something philosophical with multiple open interpretations.",
-    dimension: 'structure',
-    a_indicates: 'high',
-    b_indicates: 'low',
-  },
-  {
-    id: 'structure_2',
-    question: "You're given a choice between two essay questions.",
-    option_a: "The one with a detailed marking rubric and clear expectations.",
-    option_b: "The open-ended one where you can take it anywhere.",
-    dimension: 'structure',
-    a_indicates: 'high',
-    b_indicates: 'low',
-  },
-
-  // DEPTH (2 items)
-  {
-    id: 'depth_1',
-    question: "You have a free period in your schedule.",
-    option_a: "Go to the library to get ahead on next week's reading.",
-    option_b: "Go to the common room to relax and socialise with friends.",
-    dimension: 'depth',
-    a_indicates: 'high',
-    b_indicates: 'low',
-  },
-  {
-    id: 'depth_2',
-    question: "You've finished the required reading for an essay.",
-    option_a: "Find additional sources to go beyond what's expected.",
-    option_b: "Move on to your other subjects — you've done enough here.",
-    dimension: 'depth',
-    a_indicates: 'high',
-    b_indicates: 'low',
-  },
-
-  // TOLERANCE (2 items)
-  {
-    id: 'tolerance_1',
-    question: "In a group project, two members aren't pulling their weight.",
-    option_a: "Confront them directly and demand they contribute.",
-    option_b: "Do the work yourself to ensure you get a good grade.",
-    dimension: 'tolerance',
-    a_indicates: 'low',
-    b_indicates: 'high',
-  },
-  {
-    id: 'tolerance_2',
-    question: "You've been working on a maths problem for 45 minutes with no progress.",
-    option_a: "Keep pushing — the breakthrough will come eventually.",
-    option_b: "Move on and come back to it later with fresh eyes.",
-    dimension: 'tolerance',
-    a_indicates: 'high',
-    b_indicates: 'low',
-  },
-
-  // PRECISION (2 items)
-  {
-    id: 'precision_1',
-    question: "You're proofreading an essay before submission.",
-    option_a: "Read it once for obvious errors, then submit.",
-    option_b: "Go through multiple times checking spelling, grammar, and formatting separately.",
-    dimension: 'precision',
-    a_indicates: 'low',
-    b_indicates: 'high',
-  },
-  {
-    id: 'precision_2',
-    question: "You're doing a chemistry calculation.",
-    option_a: "Work through carefully, double-checking each step.",
-    option_b: "Get the rough answer quickly and move on.",
-    dimension: 'precision',
-    a_indicates: 'high',
-    b_indicates: 'low',
-  },
-
-  // CALIBRATION (2 items)
-  {
-    id: 'calibration_1',
-    question: "After finishing an exam, your friend asks how you did.",
-    option_a: "Give a confident prediction — you know how these usually go.",
-    option_b: "Say you're not sure — exams are unpredictable.",
-    dimension: 'calibration',
-    a_indicates: 'high',
-    b_indicates: 'low',
-  },
-  {
-    id: 'calibration_2',
-    question: "You're about to get your mock results back.",
-    option_a: "You have a pretty accurate sense of what you'll get.",
-    option_b: "You genuinely have no idea — could be anything.",
-    dimension: 'calibration',
-    a_indicates: 'high',
-    b_indicates: 'low',
-  },
-
-  // RETRIEVAL (2 items)
-  {
-    id: 'retrieval_1',
-    question: "You're revising for an exam next month.",
-    option_a: "Re-read your notes and highlight key points.",
-    option_b: "Test yourself with flashcards and practice questions.",
-    dimension: 'retrieval',
-    a_indicates: 'low',
-    b_indicates: 'high',
-  },
-  {
-    id: 'retrieval_2',
-    question: "You need to memorise a list of key dates for history.",
-    option_a: "Write them out repeatedly until they stick.",
-    option_b: "Cover the dates and try to recall them from memory.",
-    dimension: 'retrieval',
-    a_indicates: 'low',
-    b_indicates: 'high',
-  },
-
-  // CONSISTENCY (2 items)
-  {
-    id: 'consistency_1',
-    question: "It's the weekend and you have coursework due Monday.",
-    option_a: "Stick to your study schedule — Saturday morning as planned.",
-    option_b: "See how you feel — you work better under pressure anyway.",
-    dimension: 'consistency',
-    a_indicates: 'high',
-    b_indicates: 'low',
-  },
-  {
-    id: 'consistency_2',
-    question: "You've set yourself a goal to read 30 pages every evening.",
-    option_a: "You'll hit that target most nights, no matter what.",
-    option_b: "Some nights you'll do more, some less — depends on the day.",
-    dimension: 'consistency',
-    a_indicates: 'high',
-    b_indicates: 'low',
-  },
-];
+import { SCENARIOS } from '@/data/mock';
 
 export default function ScenariosPage() {
   const router = useRouter();
@@ -219,8 +17,9 @@ export default function ScenariosPage() {
   const [state, setState] = useState(getInitialState());
   const startTimeRef = useRef<number>(Date.now());
 
-  const currentScenario = SCENARIOS[currentIndex];
-  const progressPercent = Math.round((currentIndex / SCENARIOS.length) * 100);
+  // Defensive check for empty data
+  const currentScenario = SCENARIOS && SCENARIOS.length > 0 ? SCENARIOS[currentIndex] : null;
+  const progressPercent = SCENARIOS && SCENARIOS.length > 0 ? Math.round((currentIndex / SCENARIOS.length) * 100) : 0;
 
   // Slider state calculations
   const isNeutral = Math.abs(sliderValue - 50) <= 10;
@@ -254,12 +53,12 @@ export default function ScenariosPage() {
   };
 
   const handleNext = async () => {
-    if (!hasInteracted || !sessionId) return;
+    if (!hasInteracted || !sessionId || !currentScenario) return;
 
     const responseTime = Date.now() - startTimeRef.current;
 
     const response: ScenarioResponse = {
-      scenario_id: currentScenario.id,
+      scenario_id: String(currentScenario.id),
       position: sliderValue,
       response_time_ms: responseTime,
     };
@@ -267,7 +66,7 @@ export default function ScenariosPage() {
     // Save to database (upsert to handle page refresh/back navigation)
     await supabase.from('bo_v1_scenario_responses').upsert({
       session_id: sessionId,
-      scenario_id: currentScenario.id,
+      scenario_id: String(currentScenario.id),
       position: sliderValue,
       response_time_ms: responseTime,
     }, { onConflict: 'session_id,scenario_id' });
@@ -340,14 +139,13 @@ export default function ScenariosPage() {
 
         {/* Option A Box */}
         <div
-          className={`p-6 rounded-xl border-2 transition-all duration-300 text-center transform mb-6 ${
-            hasInteracted && isLeft && !isNeutral
+          className={`p-6 rounded-xl border-2 transition-all duration-300 text-center transform mb-6 ${hasInteracted && isLeft && !isNeutral
               ? 'bg-gradient-to-br from-[#FF4D6D]/20 to-transparent border-[#FF4D6D] shadow-[0_0_20px_rgba(255,77,109,0.2)] scale-105'
               : 'bg-[#1a1a24] border-white/10 scale-100'
-          }`}
+            }`}
         >
           <p className={`text-lg transition-colors ${hasInteracted && isLeft && !isNeutral ? 'text-white font-medium' : 'text-gray-300'}`}>
-            {currentScenario.option_a}
+            {currentScenario.optionA.label}
           </p>
         </div>
 
@@ -434,14 +232,13 @@ export default function ScenariosPage() {
 
         {/* Option B Box */}
         <div
-          className={`p-6 rounded-xl border-2 transition-all duration-300 text-center transform ${
-            hasInteracted && !isLeft && !isNeutral
+          className={`p-6 rounded-xl border-2 transition-all duration-300 text-center transform ${hasInteracted && !isLeft && !isNeutral
               ? 'bg-gradient-to-br from-[#00D9FF]/20 to-transparent border-[#00D9FF] shadow-[0_0_20px_rgba(0,217,255,0.2)] scale-105'
               : 'bg-[#1a1a24] border-white/10 scale-100'
-          }`}
+            }`}
         >
           <p className={`text-lg transition-colors ${hasInteracted && !isLeft && !isNeutral ? 'text-white font-medium' : 'text-gray-300'}`}>
-            {currentScenario.option_b}
+            {currentScenario.optionB.label}
           </p>
         </div>
 
@@ -450,11 +247,10 @@ export default function ScenariosPage() {
           <button
             onClick={handleNext}
             disabled={!hasInteracted}
-            className={`px-8 py-3 rounded-xl font-semibold flex items-center gap-2 transition-all duration-300 ${
-              hasInteracted
+            className={`px-8 py-3 rounded-xl font-semibold flex items-center gap-2 transition-all duration-300 ${hasInteracted
                 ? 'bg-[#6366f1] text-white shadow-[0_0_20px_rgba(99,102,241,0.4)] hover:shadow-[0_0_30px_rgba(99,102,241,0.6)]'
                 : 'bg-gray-700 text-gray-500 cursor-not-allowed opacity-50'
-            }`}
+              }`}
           >
             Next
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

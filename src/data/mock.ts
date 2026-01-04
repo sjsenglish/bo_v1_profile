@@ -151,40 +151,54 @@ export const MOCK_COURSES: UniversityCourse[] = [
     }
 ];
 
-export const SCENARIOS: Scenario[] = [
+// 6 Vibe Swiper Pairs (Visual Preferences)
+export const VIBE_PAIRS: VibePair[] = [
     {
-        id: 1,
-        title: "The Group Project Dilemma",
-        description: "You are leading a project. A team member is talented but misses deadlines. The final deadline is in 2 days. Do you cover for them (Risk burnout) or report them (Risk conflict)?",
-        options: [
-            { label: "Cover for them", value: 0, color: "#ef4444" },
-            { label: "Report them", value: 100, color: "#3b82f6" }
-        ],
-        trait: "Agreeableness vs Assertiveness"
+        id: 'campus_vs_city',
+        dimension: 'Environment',
+        question: 'Which environment appeals to you more?',
+        optionA: { id: 'A', label: 'Traditional Campus', description: 'Quads, green spaces, collegiate feel', image: 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=600&auto=format&fit=crop' },
+        optionB: { id: 'B', label: 'City University', description: 'Urban, modern, metropolitan', image: 'https://images.unsplash.com/photo-1550601977-9c5938c82ebc?q=80&w=600&auto=format&fit=crop' }
     },
     {
-        id: 2,
-        title: "New Information",
-        description: "You have spent 2 weeks researching a topic for an essay. You find a new source that contradicts your main argument 1 day before the deadline.",
-        options: [
-            { label: "Stick to plan", value: 0, color: "#eab308" },
-            { label: "Rewrite essay", value: 100, color: "#a855f7" }
-        ],
-        trait: "Rigidity vs Openness"
+        id: 'lecture_vs_seminar',
+        dimension: 'Teaching Style',
+        question: 'How do you prefer to learn?',
+        optionA: { id: 'A', label: 'Large Lecture', description: '200+ students, expert delivery', image: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?q=80&w=600&auto=format&fit=crop' },
+        optionB: { id: 'B', label: 'Small Seminar', description: '10-15 students, discussion-based', image: 'https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?q=80&w=600&auto=format&fit=crop' }
     },
     {
-        id: 3,
-        title: "The Weekend Plan",
-        description: "Your friends invite you to a last-minute road trip, but you had planned to study for an upcoming mock exam that isn't for another week.",
-        options: [
-            { label: "Go on trip", value: 0, color: "#10b981" },
-            { label: "Stay & Study", value: 100, color: "#6366f1" }
-        ],
-        trait: "Spontaneity vs Conscientiousness"
+        id: 'lab_vs_library',
+        dimension: 'Subject Domain',
+        question: 'Where do you feel most at home?',
+        optionA: { id: 'A', label: 'Science Laboratory', description: 'Experiments, equipment, discovery', image: 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?q=80&w=600&auto=format&fit=crop' },
+        optionB: { id: 'B', label: 'University Library', description: 'Books, research, quiet study', image: 'https://images.unsplash.com/photo-1521587760476-6c12a4b040da?q=80&w=600&auto=format&fit=crop' }
+    },
+    {
+        id: 'theory_vs_practice',
+        dimension: 'Application',
+        question: 'What excites you more?',
+        optionA: { id: 'A', label: 'Academic Research', description: 'Theory, equations, pure knowledge', image: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?q=80&w=600&auto=format&fit=crop' },
+        optionB: { id: 'B', label: 'Professional Training', description: 'Hands-on, vocational, applied', image: 'https://images.unsplash.com/photo-1537462713205-e5126c84206c?q=80&w=600&auto=format&fit=crop' }
+    },
+    {
+        id: 'exams_vs_coursework',
+        dimension: 'Assessment',
+        question: 'How do you prove your knowledge?',
+        optionA: { id: 'A', label: 'Exam Hall', description: 'Timed tests, high pressure', image: 'https://images.unsplash.com/photo-1560960500-1175658e4bd5?q=80&w=600&auto=format&fit=crop' },
+        optionB: { id: 'B', label: 'Project Work', description: 'Coursework, portfolios, research', image: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=600&auto=format&fit=crop' }
+    },
+    {
+        id: 'solo_vs_group',
+        dimension: 'Work Mode',
+        question: 'How do you do your best work?',
+        optionA: { id: 'A', label: 'Solo Study', description: 'Independent, focused, self-paced', image: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=80&w=600&auto=format&fit=crop' },
+        optionB: { id: 'B', label: 'Group Project', description: 'Collaborative, team-based', image: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=600&auto=format&fit=crop' }
     }
 ];
 
-export const VIBE_PAIRS: VibePair[] = [
+// 20 Forced-Choice Scenarios (Slider 0-100)
+export const SCENARIOS: Scenario[] = [
     {
         id: "TRA_01",
         dimension: "Transfer",
