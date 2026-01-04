@@ -42,27 +42,50 @@ export default function App() {
 
   const startAssessment = async () => {
     setIsLoading(true);
-    // Preserving existing logic: Clear state and create session
     clearState();
 
-    const { data, error } = await supabase
-      .from('bo_v1_sessions')
-      .insert({})
-      .select('id')
-      .single();
+    try {
+      // Get authenticated user
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
 
-    if (error) {
-      console.error('Failed to create session:', error);
-      setIsLoading(false);
-      // Fallback to route even on error for now, or handle gracefully.
-      // Assuming we want to proceed.
-      router.push('/assessment/vibe');
-      return;
-    }
+      if (authError || !user) {
+        // Middleware should catch this, but redirect just in case
+        window.location.href = 'https://examrizz.com/login?redirect=assess';
+        return;
+      }
 
-    if (data) {
+      // Check if user already has a session
+      const { data: existing } = await supabase
+        .from('bo_v1_sessions')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      let sessionId: string;
+
+      if (existing) {
+        // Resume existing session
+        sessionId = existing.id;
+      } else {
+        // Create new session linked to user
+        const { data, error } = await supabase
+          .from('bo_v1_sessions')
+          .insert({ user_id: user.id })
+          .select('id')
+          .single();
+
+        if (error) {
+          console.error('Failed to create session:', error);
+          setIsLoading(false);
+          return;
+        }
+
+        sessionId = data.id;
+      }
+
+      // Save session state
       saveState({
-        sessionId: data.id,
+        sessionId,
         stage: 'vibe',
         vibeSwipes: [],
         vibeChoices: [],
@@ -70,10 +93,13 @@ export default function App() {
         miniSampleResponses: [],
         startedAt: Date.now(),
       });
-    }
 
-    setIsLoading(false);
-    router.push('/assessment/vibe');
+      setIsLoading(false);
+      router.push('/assessment/vibe');
+    } catch (error) {
+      console.error('Error starting assessment:', error);
+      setIsLoading(false);
+    }
   };
 
   // View: Landing Page
