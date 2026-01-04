@@ -67,14 +67,14 @@ export default function ProcessingPage() {
         // Fetch scenario responses from database
         const { data: responsesData, error: responsesError } = await supabase
           .from('bo_v1_scenario_responses')
-          .select('scenario_id, slider_position')
+          .select('scenario_id, position')
           .eq('session_id', state.sessionId);
 
         if (responsesError) throw responsesError;
 
         const responses: ScenarioResponse[] = (responsesData || []).map(r => ({
           scenario_id: r.scenario_id,
-          position: r.slider_position,
+          position: r.position,
         }));
 
         // Score scenarios to get unified disposition profile (all 10 dimensions)

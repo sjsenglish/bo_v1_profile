@@ -114,7 +114,7 @@ export default function ScenariosPage() {
     await supabase.from('bo_v1_scenario_responses').insert({
       session_id: sessionId,
       scenario_id: currentScenario.id,
-      slider_position: sliderValue,
+      position: sliderValue,
       response_time_ms: responseTime,
     });
 
