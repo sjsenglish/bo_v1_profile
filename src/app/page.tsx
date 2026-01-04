@@ -15,7 +15,10 @@ import { MOCK_PROFILE, MOCK_COURSES, MOCK_CAREERS, SCENARIOS, VIBE_PAIRS, TASKS 
 import { motion } from 'framer-motion';
 import { SkipForward } from 'lucide-react';
 
+import { useRouter } from 'next/navigation';
+
 export default function App() {
+  const router = useRouter();
   const [stage, setStage] = useState<AppStage>(AppStage.LANDING);
   const [currentScenarioIndex, setCurrentScenarioIndex] = useState(0);
   const [loadingText, setLoadingText] = useState("Analysing profile...");
@@ -51,10 +54,9 @@ export default function App() {
     if (error) {
       console.error('Failed to create session:', error);
       setIsLoading(false);
-      // In a real app we might show an error, but for now we might opt to proceed or halt.
-      // If offline/mock mode is acceptable, we could proceed. 
-      // But typically we'd return. For this UI overhaul, let's proceed to show the UI.
-      setStage(AppStage.ASSESSMENT_VIBE);
+      // Fallback to route even on error for now, or handle gracefully.
+      // Assuming we want to proceed.
+      router.push('/assessment/vibe');
       return;
     }
 
@@ -71,7 +73,7 @@ export default function App() {
     }
 
     setIsLoading(false);
-    setStage(AppStage.ASSESSMENT_VIBE);
+    router.push('/assessment/vibe');
   };
 
   // View: Landing Page

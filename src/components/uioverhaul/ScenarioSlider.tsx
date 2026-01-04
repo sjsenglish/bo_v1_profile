@@ -84,7 +84,7 @@ const ScenarioSlider: React.FC<ScenarioSliderProps> = ({ scenario, currentIndex,
                             }`}
                     >
                         <p className={`text-lg transition-colors ${hasInteracted && isLeft && !isNeutral ? 'text-white font-medium' : 'text-gray-300'}`}>
-                            {scenario.options[0].label}
+                            {scenario.optionA.label}
                         </p>
                     </div>
 
@@ -174,7 +174,7 @@ const ScenarioSlider: React.FC<ScenarioSliderProps> = ({ scenario, currentIndex,
                             }`}
                     >
                         <p className={`text-lg transition-colors ${hasInteracted && !isLeft && !isNeutral ? 'text-white font-medium' : 'text-gray-300'}`}>
-                            {scenario.options[1].label}
+                            {scenario.optionB.label}
                         </p>
                     </div>
 
