@@ -74,8 +74,8 @@ function EarlyIndicators({ miniSampleResults }: { miniSampleResults: MiniSampleR
   return (
     <GlassCard className="p-6">
       <div className="flex items-center justify-between mb-4">
-        <span className="text-[#f8f5f0]/40 text-xs uppercase tracking-wider">Early Indicators</span>
-        <span className="text-[#54acbf] text-xs">from Mini-Samples</span>
+        <span className="text-[white]/40 text-xs uppercase tracking-wider">Early Indicators</span>
+        <span className="text-[#6366f1] text-xs">from Mini-Samples</span>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -87,8 +87,8 @@ function EarlyIndicators({ miniSampleResults }: { miniSampleResults: MiniSampleR
           if (!result) return (
             <div key={cluster.type} className="p-4 rounded-xl bg-white/[0.02] border border-white/[0.05] opacity-50">
               <div className="text-2xl mb-2">{cluster.emoji}</div>
-              <h4 className="text-[#f8f5f0] font-medium">{cluster.label}</h4>
-              <p className="text-[#f8f5f0]/30 text-xs mt-1">Not completed</p>
+              <h4 className="text-[white] font-medium">{cluster.label}</h4>
+              <p className="text-[white]/30 text-xs mt-1">Not completed</p>
             </div>
           );
 
@@ -96,18 +96,18 @@ function EarlyIndicators({ miniSampleResults }: { miniSampleResults: MiniSampleR
           const enjoymentLabel = ENJOYMENT_LABELS[result.enjoyment_rating + 1] || '😐 Okay';
 
           return (
-            <div key={cluster.type} className="p-4 rounded-xl bg-[#54acbf]/5 border border-[#54acbf]/20">
+            <div key={cluster.type} className="p-4 rounded-xl bg-[#6366f1]/5 border border-[#6366f1]/20">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-2xl">{cluster.emoji}</span>
                 <span className={`text-sm font-medium ${
                   scorePercent >= 70 ? 'text-[#4ade80]' :
-                  scorePercent >= 40 ? 'text-[#54acbf]' : 'text-[#f97316]'
+                  scorePercent >= 40 ? 'text-[#6366f1]' : 'text-[#f97316]'
                 }`}>
                   {scorePercent}%
                 </span>
               </div>
-              <h4 className="text-[#f8f5f0] font-medium mb-1">{cluster.label}</h4>
-              <p className="text-[#f8f5f0]/40 text-xs mb-3">{cluster.description}</p>
+              <h4 className="text-[white] font-medium mb-1">{cluster.label}</h4>
+              <p className="text-[white]/40 text-xs mb-3">{cluster.description}</p>
               <div className="flex items-center gap-2">
                 <span className="text-xs">{enjoymentLabel}</span>
               </div>
@@ -131,8 +131,8 @@ function SharpeningCTAs({ precisionScore }: { precisionScore: number }) {
   return (
     <GlassCard className="p-5">
       <div className="flex items-center justify-between mb-4">
-        <span className="text-[#f8f5f0]/40 text-xs uppercase tracking-wider">Sharpen Profile</span>
-        <span className="text-[#54acbf] text-xs">{precisionScore || 40}% precision</span>
+        <span className="text-[white]/40 text-xs uppercase tracking-wider">Sharpen Profile</span>
+        <span className="text-[#6366f1] text-xs">{precisionScore || 40}% precision</span>
       </div>
 
       <div className="space-y-2">
@@ -142,31 +142,31 @@ function SharpeningCTAs({ precisionScore }: { precisionScore: number }) {
             className={`
               p-3 rounded-xl border transition-all
               ${activity.available
-                ? 'bg-[#54acbf]/10 border-[#54acbf]/30 cursor-pointer hover:bg-[#54acbf]/20'
+                ? 'bg-[#6366f1]/10 border-[#6366f1]/30 cursor-pointer hover:bg-[#6366f1]/20'
                 : 'bg-white/[0.02] border-white/[0.05] opacity-60'}
             `}
           >
             <div className="flex items-center gap-3">
               <span className="text-lg">{activity.icon}</span>
               <div className="flex-1">
-                <p className={`text-sm font-medium ${activity.available ? 'text-[#f8f5f0]' : 'text-[#f8f5f0]/50'}`}>
+                <p className={`text-sm font-medium ${activity.available ? 'text-[white]' : 'text-[white]/50'}`}>
                   {activity.name}
                 </p>
-                <p className="text-[#f8f5f0]/30 text-xs">{activity.time}</p>
+                <p className="text-[white]/30 text-xs">{activity.time}</p>
               </div>
-              <span className={`text-xs font-medium ${activity.available ? 'text-[#4ade80]' : 'text-[#f8f5f0]/30'}`}>
+              <span className={`text-xs font-medium ${activity.available ? 'text-[#4ade80]' : 'text-[white]/30'}`}>
                 {activity.precision}
               </span>
             </div>
             {!activity.available && (
-              <p className="text-[#f8f5f0]/20 text-xs mt-2 ml-8">Coming soon</p>
+              <p className="text-[white]/20 text-xs mt-2 ml-8">Coming soon</p>
             )}
           </div>
         ))}
       </div>
 
       {precisionScore < 70 && (
-        <p className="text-[#54acbf]/60 text-xs text-center mt-4">
+        <p className="text-[#6366f1]/60 text-xs text-center mt-4">
           Reach 70% to unlock your Familiar & Guild
         </p>
       )}
@@ -215,7 +215,7 @@ interface Supercurricular {
 
 const FRICTION_LABELS: Record<string, { label: string; color: string }> = {
   LOW: { label: 'Great Fit', color: '#4ade80' },
-  MODERATE: { label: 'Good Fit', color: '#54acbf' },
+  MODERATE: { label: 'Good Fit', color: '#6366f1' },
   HIGH: { label: 'Stretch', color: '#d4a55a' },
   VERY_HIGH: { label: 'Challenge', color: '#f97316' },
   EXTREME: { label: 'Reach', color: '#ef4444' },
@@ -278,7 +278,7 @@ function calculateConfidenceGrade(
     return { grade: 'A', percentage: 95, message: 'High accuracy results', color: '#4ade80' };
   }
   if (fullBenchmarks === 1) {
-    return { grade: 'B', percentage: 75, message: 'Take another benchmark for Grade A', color: '#54acbf' };
+    return { grade: 'B', percentage: 75, message: 'Take another benchmark for Grade A', color: '#6366f1' };
   }
   if (introItems > 0 || (session?.benchmarks_completed || 0) > 0) {
     return { grade: 'C', percentage: 50, message: 'Complete benchmarks for better accuracy', color: '#d4a55a' };
@@ -300,22 +300,22 @@ function generateTutorMessage(profile: ProfileData): string {
 // COMPONENTS
 // ============================================================================
 
-function GlassCard({ 
-  children, 
+function GlassCard({
+  children,
   className = '',
   hover = false,
-}: { 
-  children: React.ReactNode; 
+}: {
+  children: React.ReactNode;
   className?: string;
   hover?: boolean;
 }) {
   return (
     <div className={`
-      bg-white/[0.03] 
-      backdrop-blur-xl 
-      border border-white/[0.08]
+      bg-[#1a1a24]/80
+      backdrop-blur-xl
+      border border-white/10
       rounded-2xl
-      ${hover ? 'hover:bg-white/[0.05] hover:border-[#54acbf]/30 transition-all duration-300' : ''}
+      ${hover ? 'hover:bg-[#1a1a24] hover:border-[#6366f1]/30 transition-all duration-300' : ''}
       ${className}
     `}>
       {children}
@@ -354,7 +354,7 @@ function ConstellationMap({ profile }: { profile: ProfileData }) {
             y1={centerY}
             x2={node.x}
             y2={node.y}
-            stroke="#54acbf"
+            stroke="#6366f1"
             strokeWidth="1"
             strokeOpacity="0.3"
           />
@@ -366,7 +366,7 @@ function ConstellationMap({ profile }: { profile: ProfileData }) {
           cy={centerY}
           r={radius + 30}
           fill="none"
-          stroke="#54acbf"
+          stroke="#6366f1"
           strokeWidth="1"
           strokeOpacity="0.1"
           strokeDasharray="4 4"
@@ -377,20 +377,20 @@ function ConstellationMap({ profile }: { profile: ProfileData }) {
           cx={centerX}
           cy={centerY}
           r={24}
-          fill="#54acbf"
+          fill="#6366f1"
           fillOpacity="0.3"
         />
         <circle
           cx={centerX}
           cy={centerY}
           r={20}
-          fill="#54acbf"
+          fill="#6366f1"
         />
         <text
           x={centerX}
           y={centerY + 4}
           textAnchor="middle"
-          fill="#011c40"
+          fill="#0a0a0f"
           fontSize="10"
           fontWeight="600"
         >
@@ -405,7 +405,7 @@ function ConstellationMap({ profile }: { profile: ProfileData }) {
               cx={node.x}
               cy={node.y}
               r={node.radius + 4}
-              fill="#54acbf"
+              fill="#6366f1"
               fillOpacity="0.15"
             />
             {/* Main node */}
@@ -413,8 +413,8 @@ function ConstellationMap({ profile }: { profile: ProfileData }) {
               cx={node.x}
               cy={node.y}
               r={node.radius}
-              fill="#011c40"
-              stroke="#54acbf"
+              fill="#0a0a0f"
+              stroke="#6366f1"
               strokeWidth="2"
             />
             {/* Label */}
@@ -422,7 +422,7 @@ function ConstellationMap({ profile }: { profile: ProfileData }) {
               x={node.x}
               y={node.y + node.radius + 16}
               textAnchor="middle"
-              fill="#f8f5f0"
+              fill="white"
               fontSize="9"
               fontWeight="500"
               opacity="0.7"
@@ -434,7 +434,7 @@ function ConstellationMap({ profile }: { profile: ProfileData }) {
               x={node.x}
               y={node.y + 4}
               textAnchor="middle"
-              fill="#54acbf"
+              fill="#6366f1"
               fontSize="11"
               fontWeight="600"
             >
@@ -450,17 +450,17 @@ function ConstellationMap({ profile }: { profile: ProfileData }) {
 // Tutor Message Component
 function TutorMessage({ message }: { message: string }) {
   return (
-    <GlassCard className="p-5 border-l-2 border-l-[#54acbf]">
+    <GlassCard className="p-5 border-l-2 border-l-[#6366f1]">
       <div className="flex items-start gap-4">
-        <div className="w-10 h-10 rounded-full bg-[#54acbf]/20 flex items-center justify-center flex-shrink-0">
-          <span className="text-[#54acbf] font-semibold">SJ</span>
+        <div className="w-10 h-10 rounded-full bg-[#6366f1]/20 flex items-center justify-center flex-shrink-0">
+          <span className="text-[#6366f1] font-semibold">SJ</span>
         </div>
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <span className="text-[#54acbf] text-sm font-medium">Academic Advisor</span>
-            <span className="text-[#f8f5f0]/30 text-xs">• Initial Assessment</span>
+            <span className="text-[#6366f1] text-sm font-medium">Academic Advisor</span>
+            <span className="text-[white]/30 text-xs">• Initial Assessment</span>
           </div>
-          <p className="text-[#f8f5f0]/70 text-sm leading-relaxed italic">
+          <p className="text-[white]/70 text-sm leading-relaxed italic">
             "{message}"
           </p>
         </div>
@@ -496,7 +496,7 @@ function CourseCard({
     .toUpperCase();
 
   return (
-    <GlassCard className={`overflow-hidden transition-all duration-300 ${isExpanded ? 'ring-1 ring-[#54acbf]/40' : ''}`}>
+    <GlassCard className={`overflow-hidden transition-all duration-300 ${isExpanded ? 'ring-1 ring-[#6366f1]/40' : ''}`}>
       {/* Header */}
       <div 
         className="p-5 cursor-pointer hover:bg-white/[0.02] transition-colors"
@@ -504,15 +504,15 @@ function CourseCard({
       >
         <div className="flex items-start gap-4">
           {/* University badge */}
-          <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#54acbf]/30 to-[#54acbf]/10 flex items-center justify-center flex-shrink-0 border border-[#54acbf]/20">
-            <span className="text-[#54acbf] font-bold text-sm">{initials}</span>
+          <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#6366f1]/30 to-[#6366f1]/10 flex items-center justify-center flex-shrink-0 border border-[#6366f1]/20">
+            <span className="text-[#6366f1] font-bold text-sm">{initials}</span>
           </div>
           
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <h3 className="text-[#f8f5f0] font-medium truncate">{match.course.course_name}</h3>
-                <p className="text-[#54acbf]/60 text-sm truncate mt-0.5">{match.course.university}</p>
+                <h3 className="text-[white] font-medium truncate">{match.course.course_name}</h3>
+                <p className="text-[#6366f1]/60 text-sm truncate mt-0.5">{match.course.university}</p>
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
                 <span 
@@ -529,8 +529,8 @@ function CourseCard({
                   onClick={(e) => { e.stopPropagation(); onTogglePin(); }}
                   className={`p-1.5 rounded-lg transition-colors ${
                     isPinned 
-                      ? 'text-[#54acbf] bg-[#54acbf]/10' 
-                      : 'text-[#f8f5f0]/20 hover:text-[#54acbf]/50 hover:bg-white/[0.03]'
+                      ? 'text-[#6366f1] bg-[#6366f1]/10' 
+                      : 'text-[white]/20 hover:text-[#6366f1]/50 hover:bg-white/[0.03]'
                   }`}
                 >
                   {isPinned ? '★' : '☆'}
@@ -541,11 +541,11 @@ function CourseCard({
             {/* Quick stats row */}
             <div className="flex items-center gap-4 mt-3">
               <div className="flex items-center gap-1.5">
-                <span className="text-[#f8f5f0]/30 text-xs">Match</span>
-                <span className="text-[#54acbf] text-sm font-medium">{match.score}%</span>
+                <span className="text-[white]/30 text-xs">Match</span>
+                <span className="text-[#6366f1] text-sm font-medium">{match.score}%</span>
               </div>
               {match.course.russell_group && (
-                <span className="text-xs px-2 py-0.5 rounded-full bg-[#54acbf]/10 text-[#54acbf]/70 border border-[#54acbf]/20">
+                <span className="text-xs px-2 py-0.5 rounded-full bg-[#6366f1]/10 text-[#6366f1]/70 border border-[#6366f1]/20">
                   Russell Group
                 </span>
               )}
@@ -565,13 +565,13 @@ function CourseCard({
                 onClick={() => setActiveTab(tab)}
                 className={`flex-1 py-3 text-xs font-semibold uppercase tracking-wider transition-colors relative ${
                   activeTab === tab 
-                    ? 'text-[#54acbf]' 
-                    : 'text-[#f8f5f0]/40 hover:text-[#f8f5f0]/60'
+                    ? 'text-[#6366f1]' 
+                    : 'text-[white]/40 hover:text-[white]/60'
                 }`}
               >
                 {tab}
                 {activeTab === tab && (
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#54acbf]" />
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#6366f1]" />
                 )}
               </button>
             ))}
@@ -583,20 +583,20 @@ function CourseCard({
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="p-3 bg-white/[0.02] rounded-lg">
-                    <p className="text-[#f8f5f0]/30 text-xs mb-1">Student Satisfaction</p>
-                    <p className="text-[#f8f5f0] font-medium">
+                    <p className="text-[white]/30 text-xs mb-1">Student Satisfaction</p>
+                    <p className="text-[white] font-medium">
                       {match.course.nss_overall ? `${match.course.nss_overall}%` : 'N/A'}
                     </p>
                   </div>
                   <div className="p-3 bg-white/[0.02] rounded-lg">
-                    <p className="text-[#f8f5f0]/30 text-xs mb-1">Vibe Bonus</p>
-                    <p className="text-[#54acbf] font-medium">+{match.vibe_bonus}</p>
+                    <p className="text-[white]/30 text-xs mb-1">Vibe Bonus</p>
+                    <p className="text-[#6366f1] font-medium">+{match.vibe_bonus}</p>
                   </div>
                 </div>
                 {match.course.russell_group && (
-                  <div className="flex items-center gap-2 p-3 bg-[#54acbf]/5 rounded-lg border border-[#54acbf]/10">
-                    <span className="text-[#54acbf]">✓</span>
-                    <span className="text-[#f8f5f0]/70 text-sm">Russell Group university — research-intensive environment</span>
+                  <div className="flex items-center gap-2 p-3 bg-[#6366f1]/5 rounded-lg border border-[#6366f1]/10">
+                    <span className="text-[#6366f1]">✓</span>
+                    <span className="text-[white]/70 text-sm">Russell Group university — research-intensive environment</span>
                   </div>
                 )}
               </div>
@@ -606,18 +606,18 @@ function CourseCard({
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="p-3 bg-white/[0.02] rounded-lg">
-                    <p className="text-[#f8f5f0]/30 text-xs mb-1">Cognitive Demand</p>
-                    <p className="text-[#f8f5f0] font-medium">{match.cognitive_score}</p>
+                    <p className="text-[white]/30 text-xs mb-1">Cognitive Demand</p>
+                    <p className="text-[white] font-medium">{match.cognitive_score}</p>
                   </div>
                   <div className="p-3 bg-white/[0.02] rounded-lg">
-                    <p className="text-[#f8f5f0]/30 text-xs mb-1">Behavioural Fit</p>
+                    <p className="text-[white]/30 text-xs mb-1">Behavioural Fit</p>
                     <p className={`font-medium ${match.behavioral_penalty > 10 ? 'text-[#d4a55a]' : 'text-[#4ade80]'}`}>
                       {match.behavioral_penalty > 0 ? `-${match.behavioral_penalty}` : 'Aligned'}
                     </p>
                   </div>
                 </div>
                 <div className="p-3 bg-white/[0.02] rounded-lg">
-                  <p className="text-[#f8f5f0]/30 text-xs mb-2">Friction Level</p>
+                  <p className="text-[white]/30 text-xs mb-2">Friction Level</p>
                   <div className="flex items-center gap-3">
                     <div className="flex-1 h-2 bg-white/[0.06] rounded-full overflow-hidden">
                       <div 
@@ -628,7 +628,7 @@ function CourseCard({
                         }}
                       />
                     </div>
-                    <span className="text-[#f8f5f0]/50 text-xs">{friction.label}</span>
+                    <span className="text-[white]/50 text-xs">{friction.label}</span>
                   </div>
                 </div>
               </div>
@@ -641,7 +641,7 @@ function CourseCard({
                     <p className="text-2xl font-bold text-[#4ade80] mb-1">
                       {match.course.employment_rate ? `${match.course.employment_rate}%` : 'N/A'}
                     </p>
-                    <p className="text-[#f8f5f0]/30 text-xs uppercase tracking-wider">Employment Rate</p>
+                    <p className="text-[white]/30 text-xs uppercase tracking-wider">Employment Rate</p>
                   </div>
                   <div className="p-4 bg-white/[0.02] rounded-lg text-center">
                     <p className="text-2xl font-bold text-[#4ade80] mb-1">
@@ -649,7 +649,7 @@ function CourseCard({
                         ? `£${(match.course.median_salary_5yr / 1000).toFixed(0)}k` 
                         : 'N/A'}
                     </p>
-                    <p className="text-[#f8f5f0]/30 text-xs uppercase tracking-wider">Salary (5yr)</p>
+                    <p className="text-[white]/30 text-xs uppercase tracking-wider">Salary (5yr)</p>
                   </div>
                 </div>
               </div>
@@ -658,10 +658,10 @@ function CourseCard({
 
           {/* Actions */}
           <div className="px-5 pb-5 flex gap-3">
-            <button className="flex-1 py-2.5 bg-[#54acbf] text-[#011c40] rounded-xl text-sm font-semibold hover:bg-[#54acbf]/90 transition-colors">
+            <button className="flex-1 py-2.5 bg-[#6366f1] text-[#0a0a0f] rounded-xl text-sm font-semibold hover:bg-[#6366f1]/90 transition-colors">
               Shortlist
             </button>
-            <button className="flex-1 py-2.5 bg-white/[0.05] text-[#f8f5f0]/70 rounded-xl text-sm font-medium border border-white/[0.08] hover:border-[#54acbf]/30 hover:text-[#54acbf] transition-colors">
+            <button className="flex-1 py-2.5 bg-white/[0.05] text-[white]/70 rounded-xl text-sm font-medium border border-white/[0.08] hover:border-[#6366f1]/30 hover:text-[#6366f1] transition-colors">
               View on UCAS
             </button>
           </div>
@@ -684,17 +684,17 @@ function SupercurricularCard({ item }: { item: Supercurricular }) {
         className="block"
       >
         <div className="flex items-start gap-3">
-          <div className="w-10 h-10 rounded-lg bg-[#54acbf]/10 flex items-center justify-center flex-shrink-0">
+          <div className="w-10 h-10 rounded-lg bg-[#6366f1]/10 flex items-center justify-center flex-shrink-0">
             <span className="text-lg">{icon}</span>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-[#54acbf]/60 text-xs uppercase tracking-wider mb-1">{item.type.replace('_', ' ')}</p>
-            <h4 className="text-[#f8f5f0] text-sm font-medium leading-snug">{item.title}</h4>
+            <p className="text-[#6366f1]/60 text-xs uppercase tracking-wider mb-1">{item.type.replace('_', ' ')}</p>
+            <h4 className="text-[white] text-sm font-medium leading-snug">{item.title}</h4>
             {item.author && (
-              <p className="text-[#f8f5f0]/40 text-xs mt-1">{item.author}</p>
+              <p className="text-[white]/40 text-xs mt-1">{item.author}</p>
             )}
           </div>
-          <span className="text-[#f8f5f0]/20 text-sm">→</span>
+          <span className="text-[white]/20 text-sm">→</span>
         </div>
       </a>
     </GlassCard>
@@ -827,10 +827,10 @@ export default function ResultsPage() {
   // Loading state
   if (loading) {
     return (
-      <main className="min-h-screen bg-[#011c40] flex items-center justify-center">
+      <main className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
         <div className="text-center">
-          <div className="w-8 h-8 border-2 border-[#54acbf]/30 border-t-[#54acbf] rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-[#f8f5f0]/40 text-sm">Loading your results...</p>
+          <div className="w-8 h-8 border-2 border-[#6366f1]/30 border-t-[#6366f1] rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-[white]/40 text-sm">Loading your results...</p>
         </div>
       </main>
     );
@@ -839,12 +839,12 @@ export default function ResultsPage() {
   // Error state
   if (error || !profile) {
     return (
-      <main className="min-h-screen bg-[#011c40] flex items-center justify-center">
+      <main className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
         <GlassCard className="p-8 text-center max-w-sm">
-          <p className="text-[#f8f5f0]/60 mb-4">Results not found</p>
+          <p className="text-[white]/60 mb-4">Results not found</p>
           <a 
             href="/" 
-            className="inline-block px-6 py-2 bg-[#54acbf] text-[#011c40] rounded-lg font-medium hover:bg-[#54acbf]/90 transition-colors"
+            className="inline-block px-6 py-2 bg-[#6366f1] text-[#0a0a0f] rounded-lg font-medium hover:bg-[#6366f1]/90 transition-colors"
           >
             Start again
           </a>
@@ -868,29 +868,29 @@ export default function ResultsPage() {
   const benchmarkCount = Object.values(completedBenchmarks).filter(Boolean).length;
 
   return (
-    <main className="min-h-screen bg-[#011c40]">
+    <main className="min-h-screen bg-[#0a0a0f]">
       {/* Background effects */}
       <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#54acbf]/5 rounded-full blur-[100px]" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-[#54acbf]/5 rounded-full blur-[100px]" />
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#6366f1]/5 rounded-full blur-[100px]" />
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-[#6366f1]/5 rounded-full blur-[100px]" />
       </div>
       
       {/* Nav */}
       <nav className="relative z-10 flex justify-between items-center px-6 py-4 border-b border-white/[0.06]">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-[#54acbf]/20 flex items-center justify-center border border-[#54acbf]/30">
-            <span className="text-[#54acbf] font-bold text-sm">E</span>
+          <div className="w-9 h-9 rounded-lg bg-[#6366f1]/20 flex items-center justify-center border border-[#6366f1]/30">
+            <span className="text-[#6366f1] font-bold text-sm">E</span>
           </div>
-          <span className="text-[#f8f5f0] font-semibold">ExamRizz Arena</span>
+          <span className="text-[white] font-semibold">ExamRizz Arena</span>
         </div>
         <div className="flex items-center gap-6">
           <button 
             onClick={() => navigator.clipboard.writeText(window.location.href)}
-            className="text-[#f8f5f0]/50 hover:text-[#54acbf] text-sm transition-colors"
+            className="text-[white]/50 hover:text-[#6366f1] text-sm transition-colors"
           >
             Share Results
           </button>
-          <a href="/" className="text-[#f8f5f0]/50 hover:text-[#54acbf] text-sm transition-colors">
+          <a href="/" className="text-[white]/50 hover:text-[#6366f1] text-sm transition-colors">
             New Assessment
           </a>
         </div>
@@ -905,7 +905,7 @@ export default function ResultsPage() {
           {/* Confidence Grade */}
           <GlassCard className="p-5">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-[#f8f5f0]/40 text-xs uppercase tracking-wider">Match Confidence</span>
+              <span className="text-[white]/40 text-xs uppercase tracking-wider">Match Confidence</span>
               <div 
                 className="w-12 h-12 rounded-xl flex items-center justify-center text-xl font-bold"
                 style={{ backgroundColor: `${confidence.color}15`, color: confidence.color }}
@@ -919,11 +919,11 @@ export default function ResultsPage() {
                 style={{ width: `${confidence.percentage}%`, backgroundColor: confidence.color }}
               />
             </div>
-            <p className="text-[#f8f5f0]/40 text-xs mb-4">{confidence.message}</p>
+            <p className="text-[white]/40 text-xs mb-4">{confidence.message}</p>
             {confidence.grade !== 'A' && (
               <button
                 onClick={handleTakeBenchmark}
-                className="w-full py-2.5 text-[#54acbf] text-sm font-medium border border-[#54acbf]/30 rounded-xl hover:bg-[#54acbf]/10 transition-colors"
+                className="w-full py-2.5 text-[#6366f1] text-sm font-medium border border-[#6366f1]/30 rounded-xl hover:bg-[#6366f1]/10 transition-colors"
               >
                 Improve Grade
               </button>
@@ -935,13 +935,13 @@ export default function ResultsPage() {
             <div className="flex flex-col items-center text-center">
               {(profile.precision_score || 40) >= 70 ? (
                 <>
-                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#54acbf]/20 to-[#54acbf]/5 border border-[#54acbf]/20 flex items-center justify-center mb-4">
+                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#6366f1]/20 to-[#6366f1]/5 border border-[#6366f1]/20 flex items-center justify-center mb-4">
                     <span className="text-4xl">🎓</span>
                   </div>
-                  <h3 className="text-[#f8f5f0] font-semibold text-lg">{familiar?.name || 'Scholar'}</h3>
-                  <p className="text-[#54acbf]/60 text-sm mt-1">{familiar?.tagline || 'Knowledge Seeker'}</p>
-                  <div className="mt-4 px-3 py-1.5 bg-[#54acbf]/10 rounded-full border border-[#54acbf]/20">
-                    <span className="text-[#54acbf] text-xs font-medium">Level {level}</span>
+                  <h3 className="text-[white] font-semibold text-lg">{familiar?.name || 'Scholar'}</h3>
+                  <p className="text-[#6366f1]/60 text-sm mt-1">{familiar?.tagline || 'Knowledge Seeker'}</p>
+                  <div className="mt-4 px-3 py-1.5 bg-[#6366f1]/10 rounded-full border border-[#6366f1]/20">
+                    <span className="text-[#6366f1] text-xs font-medium">Level {level}</span>
                   </div>
                 </>
               ) : (
@@ -952,10 +952,10 @@ export default function ResultsPage() {
                       <span className="text-2xl">🔒</span>
                     </div>
                   </div>
-                  <h3 className="text-[#f8f5f0]/50 font-semibold text-lg">Familiar Locked</h3>
-                  <p className="text-[#f8f5f0]/30 text-sm mt-1">Reach 70% precision to unlock</p>
+                  <h3 className="text-[white]/50 font-semibold text-lg">Familiar Locked</h3>
+                  <p className="text-[white]/30 text-sm mt-1">Reach 70% precision to unlock</p>
                   <div className="mt-4 px-3 py-1.5 bg-white/[0.03] rounded-full border border-white/[0.08]">
-                    <span className="text-[#f8f5f0]/30 text-xs font-medium">{profile.precision_score || 40}% precision</span>
+                    <span className="text-[white]/30 text-xs font-medium">{profile.precision_score || 40}% precision</span>
                   </div>
                 </>
               )}
@@ -965,8 +965,8 @@ export default function ResultsPage() {
           {/* Benchmarks Progress */}
           <GlassCard className="p-5">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-[#f8f5f0]/40 text-xs uppercase tracking-wider">Benchmarks</span>
-              <span className="text-[#54acbf] text-sm font-medium">{benchmarkCount}/3</span>
+              <span className="text-[white]/40 text-xs uppercase tracking-wider">Benchmarks</span>
+              <span className="text-[#6366f1] text-sm font-medium">{benchmarkCount}/3</span>
             </div>
             <div className="space-y-2">
               {[
@@ -977,16 +977,16 @@ export default function ResultsPage() {
                 <div 
                   key={b.id}
                   className={`flex items-center justify-between py-2.5 px-3 rounded-lg transition-colors ${
-                    b.done ? 'bg-[#54acbf]/10 border border-[#54acbf]/20' : 'bg-white/[0.02]'
+                    b.done ? 'bg-[#6366f1]/10 border border-[#6366f1]/20' : 'bg-white/[0.02]'
                   }`}
                 >
-                  <span className={`text-sm ${b.done ? 'text-[#54acbf]' : 'text-[#f8f5f0]/40'}`}>
+                  <span className={`text-sm ${b.done ? 'text-[#6366f1]' : 'text-[white]/40'}`}>
                     {b.label}
                   </span>
                   {b.done ? (
                     <span className="text-[#4ade80] text-sm">✓</span>
                   ) : (
-                    <span className="text-[#f8f5f0]/20 text-xs">Pending</span>
+                    <span className="text-[white]/20 text-xs">Pending</span>
                   )}
                 </div>
               ))}
@@ -1002,9 +1002,9 @@ export default function ResultsPage() {
           
           {/* Constellation + Tutor Message */}
           <GlassCard className="p-6">
-            <p className="text-[#54acbf]/60 text-xs uppercase tracking-wider mb-2">Disposition Profile</p>
-            <h2 className="text-2xl text-[#f8f5f0] font-light mb-6">
-              The <span className="text-[#54acbf] font-medium">{guild?.name?.replace('The ', '') || 'Scholar'}</span>
+            <p className="text-[#6366f1]/60 text-xs uppercase tracking-wider mb-2">Disposition Profile</p>
+            <h2 className="text-2xl text-[white] font-light mb-6">
+              The <span className="text-[#6366f1] font-medium">{guild?.name?.replace('The ', '') || 'Scholar'}</span>
             </h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
@@ -1013,12 +1013,12 @@ export default function ResultsPage() {
                 {DISPOSITION_CONFIG.map((d) => (
                   <div key={d.key}>
                     <div className="flex justify-between text-xs mb-1.5">
-                      <span className="text-[#f8f5f0]/60">{d.label}</span>
-                      <span className="text-[#54acbf]">{(profile as any)[d.key]}</span>
+                      <span className="text-[white]/60">{d.label}</span>
+                      <span className="text-[#6366f1]">{(profile as any)[d.key]}</span>
                     </div>
                     <div className="h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
                       <div 
-                        className="h-full bg-[#54acbf] rounded-full transition-all duration-500"
+                        className="h-full bg-[#6366f1] rounded-full transition-all duration-500"
                         style={{ width: `${(profile as any)[d.key]}%` }}
                       />
                     </div>
@@ -1038,8 +1038,8 @@ export default function ResultsPage() {
           <div>
             <div className="flex items-center justify-between mb-4 px-1">
               <div>
-                <h2 className="text-[#f8f5f0] font-semibold text-lg">Course Matches</h2>
-                <p className="text-[#f8f5f0]/40 text-sm mt-0.5">{matches.length} courses matched to your profile</p>
+                <h2 className="text-[white] font-semibold text-lg">Course Matches</h2>
+                <p className="text-[white]/40 text-sm mt-0.5">{matches.length} courses matched to your profile</p>
               </div>
             </div>
             
@@ -1059,7 +1059,7 @@ export default function ResultsPage() {
             {matches.length > 6 && (
               <button
                 onClick={() => setShowAllCourses(!showAllCourses)}
-                className="mt-5 w-full py-3 text-[#54acbf] text-sm font-medium border border-[#54acbf]/20 rounded-xl hover:bg-[#54acbf]/5 transition-colors"
+                className="mt-5 w-full py-3 text-[#6366f1] text-sm font-medium border border-[#6366f1]/20 rounded-xl hover:bg-[#6366f1]/5 transition-colors"
               >
                 {showAllCourses ? 'Show fewer courses' : `Show ${matches.length - 6} more courses`}
               </button>
@@ -1070,8 +1070,8 @@ export default function ResultsPage() {
           {supercurriculars.length > 0 && (
             <div>
               <div className="mb-4 px-1">
-                <h2 className="text-[#f8f5f0] font-semibold text-lg">Recommended Activities</h2>
-                <p className="text-[#f8f5f0]/40 text-sm mt-0.5">Build your application with these resources</p>
+                <h2 className="text-[white] font-semibold text-lg">Recommended Activities</h2>
+                <p className="text-[white]/40 text-sm mt-0.5">Build your application with these resources</p>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {supercurriculars.map((item) => (
@@ -1087,7 +1087,7 @@ export default function ResultsPage() {
           
           {/* Pinned Courses */}
           <GlassCard className="p-5">
-            <p className="text-[#f8f5f0]/40 text-xs uppercase tracking-wider mb-4">Pinned Courses</p>
+            <p className="text-[white]/40 text-xs uppercase tracking-wider mb-4">Pinned Courses</p>
             {pinnedCourses.length > 0 ? (
               <div className="space-y-3">
                 {matches
@@ -1097,22 +1097,22 @@ export default function ResultsPage() {
                       key={m.course.id}
                       className="p-3 bg-white/[0.03] rounded-lg border border-white/[0.06]"
                     >
-                      <p className="text-[#f8f5f0] text-sm font-medium truncate">{m.course.course_name}</p>
-                      <p className="text-[#54acbf]/50 text-xs truncate mt-1">{m.course.university}</p>
+                      <p className="text-[white] text-sm font-medium truncate">{m.course.course_name}</p>
+                      <p className="text-[#6366f1]/50 text-xs truncate mt-1">{m.course.university}</p>
                     </div>
                   ))
                 }
               </div>
             ) : (
               <div className="text-center py-8">
-                <p className="text-[#f8f5f0]/20 text-sm">Star courses to pin them here</p>
+                <p className="text-[white]/20 text-sm">Star courses to pin them here</p>
               </div>
             )}
           </GlassCard>
 
           {/* Top 3 Matches */}
           <GlassCard className="p-5">
-            <p className="text-[#f8f5f0]/40 text-xs uppercase tracking-wider mb-4">Top Matches</p>
+            <p className="text-[white]/40 text-xs uppercase tracking-wider mb-4">Top Matches</p>
             <div className="space-y-3">
               {matches.slice(0, 3).map((m, i) => {
                 const friction = FRICTION_LABELS[m.friction] || FRICTION_LABELS.MODERATE;
@@ -1128,8 +1128,8 @@ export default function ResultsPage() {
                       {i + 1}
                     </span>
                     <div className="flex-1 min-w-0">
-                      <p className="text-[#f8f5f0]/80 text-sm font-medium truncate">{m.course.course_name}</p>
-                      <p className="text-[#f8f5f0]/30 text-xs truncate">{m.course.university}</p>
+                      <p className="text-[white]/80 text-sm font-medium truncate">{m.course.course_name}</p>
+                      <p className="text-[white]/30 text-xs truncate">{m.course.university}</p>
                     </div>
                   </div>
                 );
@@ -1139,18 +1139,18 @@ export default function ResultsPage() {
 
           {/* Quick Actions */}
           <GlassCard className="p-5">
-            <p className="text-[#f8f5f0]/40 text-xs uppercase tracking-wider mb-4">Actions</p>
+            <p className="text-[white]/40 text-xs uppercase tracking-wider mb-4">Actions</p>
             <div className="space-y-2">
               <button 
                 onClick={() => navigator.clipboard.writeText(window.location.href)}
-                className="w-full py-2.5 text-[#f8f5f0]/60 text-sm bg-white/[0.03] rounded-lg hover:bg-white/[0.06] transition-colors text-left px-4"
+                className="w-full py-2.5 text-[white]/60 text-sm bg-white/[0.03] rounded-lg hover:bg-white/[0.06] transition-colors text-left px-4"
               >
                 📋 Copy results link
               </button>
-              <button className="w-full py-2.5 text-[#f8f5f0]/60 text-sm bg-white/[0.03] rounded-lg hover:bg-white/[0.06] transition-colors text-left px-4">
+              <button className="w-full py-2.5 text-[white]/60 text-sm bg-white/[0.03] rounded-lg hover:bg-white/[0.06] transition-colors text-left px-4">
                 📄 Export as PDF
               </button>
-              <button className="w-full py-2.5 text-[#f8f5f0]/60 text-sm bg-white/[0.03] rounded-lg hover:bg-white/[0.06] transition-colors text-left px-4">
+              <button className="w-full py-2.5 text-[white]/60 text-sm bg-white/[0.03] rounded-lg hover:bg-white/[0.06] transition-colors text-left px-4">
                 🔄 Retake assessment
               </button>
             </div>

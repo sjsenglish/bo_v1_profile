@@ -11,43 +11,39 @@ import { assignIdentity } from '@/lib/identity';
 import { rankCoursesAsync } from '@/lib/matching';
 import { Course, Scenario, ScenarioResponse, VibeChoice, Disposition } from '@/lib/types';
 
-import {
-  Atmosphere,
-  GemIcon,
-  ArcaneButton,
-  ARCANE_COLORS,
-} from '@/components/ui/arcane';
-
-const STEPS = [
-  { label: 'Analysing responses', description: 'Reading the patterns in your choices...' },
-  { label: 'Building cognitive profile', description: 'Mapping your mental architecture...' },
-  { label: 'Mapping behavioural patterns', description: 'Understanding how you learn...' },
-  { label: 'Calculating capacities', description: 'Measuring your potential...' },
-  { label: 'Summoning your familiar', description: 'A spirit emerges from the aether...' },
-  { label: 'Scanning the archives', description: 'Searching 30,960 UK courses...' },
-  { label: 'Ranking matches', description: 'Finding where you belong...' },
-  { label: 'Finalising results', description: 'Your destiny awaits...' },
+const LOADING_MESSAGES = [
+  'Analysing your responses...',
+  'Building your cognitive profile...',
+  'Mapping learning patterns...',
+  'Calculating capacities...',
+  'Scanning 28,520 UK courses...',
+  'Ranking your matches...',
+  'Finalising results...',
 ];
 
 export default function ProcessingPage() {
   const router = useRouter();
-  const [currentStep, setCurrentStep] = useState(0);
+  const [messageIndex, setMessageIndex] = useState(0);
   const [error, setError] = useState<string | null>(null);
+
+  // Cycle through loading messages
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setMessageIndex((prev) => (prev + 1) % LOADING_MESSAGES.length);
+    }, 2000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const process = async () => {
       const state = getInitialState();
-      
+
       if (!state.sessionId) {
         router.push('/');
         return;
       }
 
       try {
-        setCurrentStep(0);
-        await delay(500);
-
-        setCurrentStep(1);
         // Fetch scenarios from database
         const { data: scenariosData, error: scenariosError } = await supabase
           .from('bo_v1_scenarios')
@@ -67,9 +63,7 @@ export default function ProcessingPage() {
           sort_order: s.sort_order || 0,
           active: s.active ?? true,
         }));
-        await delay(400);
 
-        setCurrentStep(2);
         // Fetch scenario responses from database
         const { data: responsesData, error: responsesError } = await supabase
           .from('bo_v1_scenario_responses')
@@ -85,15 +79,12 @@ export default function ProcessingPage() {
 
         // Score scenarios to get unified disposition profile (all 10 dimensions)
         const dispositionProfile = scoreScenarios(responses, scenarios);
-        await delay(400);
 
-        setCurrentStep(3);
         // Get vibe profile and tags from vibe choices (v9 format)
         const vibeChoices = (state.vibeChoices || []) as VibeChoice[];
         const vibeProfile = calculateVibeProfile(vibeChoices);
         const vibeTags = collectVibeTags(vibeChoices);
 
-        // In v9, vibe doesn't nudge dispositions - it just affects course matching via tags
         // Split into cognitive and behavioral for compatibility with downstream functions
         const cognitive = {
           calibration: dispositionProfile.calibration,
@@ -110,15 +101,11 @@ export default function ProcessingPage() {
           depth: dispositionProfile.depth,
         };
         const capacities = proxyCapacities(dispositionProfile);
-        await delay(400);
 
-        setCurrentStep(4);
         const dominant = findDominant(dispositionProfile);
         const nemesis = findNemesis(dispositionProfile);
         const identity = assignIdentity(state.sessionId, cognitive, behavioral, dominant, nemesis);
-        await delay(500);
 
-        setCurrentStep(5);
         const { data: courses, error: coursesError } = await supabase
           .from('bo_v1_courses')
           .select('*')
@@ -126,9 +113,7 @@ export default function ProcessingPage() {
           .limit(5000);
 
         if (coursesError) throw coursesError;
-        await delay(300);
 
-        setCurrentStep(6);
         const matches = await rankCoursesAsync(
           cognitive,
           behavioral,
@@ -137,9 +122,6 @@ export default function ProcessingPage() {
           courses as Course[],
           20
         );
-        await delay(400);
-
-        setCurrentStep(7);
 
         const profileData = {
           session_id: state.sessionId,
@@ -193,21 +175,19 @@ export default function ProcessingPage() {
           fit_score: m.disposition_score,
           friction: m.friction,
           cognitive_score: m.enjoyment_score,
-          behavioral_penalty: 0, // Not used in v9, keeping for schema compatibility
+          behavioral_penalty: 0,
           vibe_bonus: m.vibe_bonus,
           rank: m.rank,
         }));
 
         const { error: matchError } = await supabase
           .from('bo_v1_matches')
-          .upsert(matchInserts, { 
+          .upsert(matchInserts, {
             onConflict: 'session_id,course_id',
-            ignoreDuplicates: false 
+            ignoreDuplicates: false
           });
 
         if (matchError) throw matchError;
-
-        await delay(500);
 
         saveState({ ...state, stage: 'complete' });
         router.push(`/results/${state.sessionId}`);
@@ -221,151 +201,89 @@ export default function ProcessingPage() {
     process();
   }, [router]);
 
-  const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
   if (error) {
     return (
-      <main className="min-h-screen bg-[#011c40] relative overflow-hidden flex items-center justify-center p-6">
-        <Atmosphere variant="subtle" />
-        <div className="text-center space-y-6">
-          <div className="w-16 h-16 mx-auto border-2 border-red-500/50 rounded-full flex items-center justify-center">
-            <span className="text-red-400 text-2xl">✕</span>
-          </div>
-          <div>
-            <h2 className="text-xl text-[#a7ebf2] font-bold mb-2">Something went wrong</h2>
-            <p className="text-[#26658c] text-sm max-w-md">{error}</p>
-          </div>
-          <ArcaneButton onClick={() => router.push('/')} variant="secondary">
-            Start Over
-          </ArcaneButton>
+      <div className="min-h-screen bg-[#0a0a0f] flex flex-col items-center justify-center relative overflow-hidden">
+        {/* Background Blurs */}
+        <div className="fixed inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-[-20%] right-[-10%] w-[60%] h-[60%] bg-red-500/10 blur-[120px] rounded-full"></div>
+          <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#06b6d4]/10 blur-[100px] rounded-full"></div>
         </div>
-      </main>
+
+        <div className="relative z-10 text-center px-6">
+          <div className="w-20 h-20 mx-auto mb-8 rounded-full border-2 border-red-500/30 flex items-center justify-center bg-red-500/10">
+            <svg className="w-10 h-10 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </div>
+          <h2 className="text-2xl font-bold text-white mb-3">Something went wrong</h2>
+          <p className="text-gray-400 text-sm max-w-md mb-8">{error}</p>
+          <button
+            onClick={() => router.push('/')}
+            className="px-8 py-3 rounded-xl font-semibold bg-[#6366f1] text-white shadow-[0_0_20px_rgba(99,102,241,0.4)] hover:shadow-[0_0_30px_rgba(99,102,241,0.6)] transition-all duration-300"
+          >
+            Start Over
+          </button>
+        </div>
+      </div>
     );
   }
 
-  const currentStepData = STEPS[currentStep];
-
   return (
-    <main className="min-h-screen bg-[#011c40] relative overflow-hidden flex items-center justify-center p-6">
-      <Atmosphere variant="intense" />
+    <div className="min-h-screen bg-[#0a0a0f] flex flex-col items-center justify-center relative overflow-hidden">
+      {/* Background Blurs */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-[-20%] right-[-10%] w-[60%] h-[60%] bg-[#6366f1]/10 blur-[120px] rounded-full"></div>
+        <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#06b6d4]/10 blur-[100px] rounded-full"></div>
+      </div>
 
-      <div className="max-w-lg w-full text-center">
-        
-        {/* Arcane Loader */}
-        <div className="mb-12">
-          <div className="relative w-48 h-48 mx-auto">
-            {/* Outer Ring */}
-            <div 
-              className="absolute inset-0 border-4 border-[#54acbf] border-t-transparent rounded-full arcane-glow-teal"
-              style={{ animation: 'arcane-spin-chase 2s cubic-bezier(0.4, 0, 0.2, 1) infinite' }}
-            />
-            {/* Middle Ring (counter-rotate) */}
-            <div 
-              className="absolute inset-4 border-4 border-[#a7ebf2] border-b-transparent rounded-full arcane-glow-ice"
-              style={{ animation: 'arcane-spin-chase-reverse 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite' }}
-            />
-            {/* Inner Ring */}
-            <div 
-              className="absolute inset-8 border-4 border-[#26658c] border-t-transparent rounded-full"
-              style={{ animation: 'arcane-spin-chase 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite' }}
-            />
-            {/* Centre Gem */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="animate-arcane-pulse-glow">
-                <GemIcon glow color={ARCANE_COLORS.teal} size="lg" />
-              </div>
-            </div>
+      <div className="relative z-10 text-center px-6">
+        {/* Spinner */}
+        <div className="w-24 h-24 mx-auto mb-8 relative">
+          {/* Outer ring */}
+          <div className="absolute inset-0 rounded-full border-4 border-[#6366f1]/20"></div>
+          <div className="absolute inset-0 rounded-full border-t-4 border-[#6366f1] animate-spin"></div>
+          {/* Inner ring */}
+          <div className="absolute inset-4 rounded-full border-4 border-[#06b6d4]/20"></div>
+          <div
+            className="absolute inset-4 rounded-full border-b-4 border-[#06b6d4]"
+            style={{ animation: 'spin 1.5s linear infinite reverse' }}
+          ></div>
+          {/* Center dot */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-3 h-3 rounded-full bg-white animate-pulse"></div>
           </div>
         </div>
 
-        {/* Current Step Display */}
-        <div className="mb-10 space-y-2">
-          <h2 className="text-2xl font-bold uppercase tracking-widest text-[#a7ebf2]">
-            {currentStepData.label}
-          </h2>
-          <p className="text-[#54acbf] font-serif italic text-sm opacity-80">
-            {currentStepData.description}
+        {/* Loading Message */}
+        <h2 className="text-2xl md:text-3xl font-bold text-white mb-3 animate-pulse">
+          {LOADING_MESSAGES[messageIndex]}
+        </h2>
+        <p className="text-gray-500 text-sm">Do not refresh the page.</p>
+
+        {/* Progress dots */}
+        <div className="flex justify-center gap-2 mt-8">
+          {LOADING_MESSAGES.map((_, i) => (
+            <div
+              key={i}
+              className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                i === messageIndex
+                  ? 'bg-[#6366f1] scale-125'
+                  : i < messageIndex
+                    ? 'bg-[#6366f1]/50'
+                    : 'bg-gray-700'
+              }`}
+            />
+          ))}
+        </div>
+
+        {/* Footer Note */}
+        <div className="mt-12 px-6 py-3 bg-[#1a1a24]/50 border border-white/5 rounded-xl inline-block">
+          <p className="text-gray-500 text-xs uppercase tracking-widest">
+            Matching against 28,520 UK courses
           </p>
         </div>
-
-        {/* Step List */}
-        <div className="space-y-3 text-left max-w-sm mx-auto">
-          {STEPS.map((step, i) => {
-            const isComplete = i < currentStep;
-            const isCurrent = i === currentStep;
-            const isPending = i > currentStep;
-
-            return (
-              <div
-                key={i}
-                className={`
-                  flex items-center gap-4 transition-all duration-500
-                  ${isComplete ? 'opacity-50' : ''}
-                  ${isCurrent ? 'opacity-100' : ''}
-                  ${isPending ? 'opacity-20' : ''}
-                `}
-              >
-                {/* Status Icon */}
-                <div 
-                  className={`
-                    w-8 h-8 rounded-full flex items-center justify-center shrink-0
-                    border-2 transition-all duration-500
-                    ${isComplete 
-                      ? 'border-[#54acbf] bg-[#54acbf]/20' 
-                      : isCurrent 
-                        ? 'border-[#54acbf] bg-[#011c40] arcane-glow-teal' 
-                        : 'border-[#26658c] bg-[#011c40]'
-                    }
-                  `}
-                >
-                  {isComplete ? (
-                    <svg className="w-4 h-4 text-[#54acbf]" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                    </svg>
-                  ) : isCurrent ? (
-                    <div className="w-2 h-2 bg-[#54acbf] rounded-full animate-pulse" />
-                  ) : (
-                    <span className="text-[#26658c] text-xs font-mono">{i + 1}</span>
-                  )}
-                </div>
-
-                {/* Label */}
-                <span 
-                  className={`
-                    text-sm transition-colors duration-500
-                    ${isCurrent ? 'text-[#a7ebf2]' : 'text-[#26658c]'}
-                  `}
-                >
-                  {step.label}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Footer Info */}
-        <div className="mt-12 py-4 px-6 bg-[#023859]/30 border border-[#26658c]/50 rounded-sm">
-          <p className="text-[#26658c] text-xs uppercase tracking-widest">
-            <GemIcon color={ARCANE_COLORS.ice} size="sm" className="inline-block mr-2 -mt-1" />
-            Matching against 30,960 UK university courses
-          </p>
-        </div>
-
       </div>
-
-      {/* Keyframe styles injected */}
-      <style jsx>{`
-        @keyframes arcane-spin-chase {
-          0% { transform: rotate(0deg); }
-          50% { transform: rotate(280deg); }
-          100% { transform: rotate(360deg); }
-        }
-        @keyframes arcane-spin-chase-reverse {
-          0% { transform: rotate(360deg); }
-          50% { transform: rotate(80deg); }
-          100% { transform: rotate(0deg); }
-        }
-      `}</style>
-    </main>
+    </div>
   );
 }

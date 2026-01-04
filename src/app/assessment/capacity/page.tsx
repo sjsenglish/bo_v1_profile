@@ -4,14 +4,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { getInitialState } from '@/lib/assessment';
-import {
-  Atmosphere,
-  CardFrame,
-  ArcaneButton,
-  ProgressIndicator,
-  GemIcon,
-  ARCANE_COLORS,
-} from '@/components/ui/arcane';
 
 import BinaryRapid from './components/BinaryRapid';
 import TableRead from './components/TableRead';
@@ -53,7 +45,6 @@ export default function CapacityIntroPage() {
     if (savedState?.sessionId) {
       setSessionId(savedState.sessionId);
     } else {
-      // No session - redirect to start
       router.push('/');
     }
   }, [router]);
@@ -75,7 +66,6 @@ export default function CapacityIntroPage() {
       const data = await res.json();
 
       if (data.status === 'complete') {
-        // Already done all intro items
         router.push(`/results/${sessionId}`);
         return;
       }
@@ -118,7 +108,6 @@ export default function CapacityIntroPage() {
       setLastFeedback(data.score_feedback);
       setState('feedback');
 
-      // After brief feedback, move to next or complete
       setTimeout(() => {
         if (data.status === 'complete') {
           setState('complete');
@@ -134,7 +123,6 @@ export default function CapacityIntroPage() {
   };
 
   const handleTimeout = () => {
-    // Auto-submit empty response on timeout
     handleResponse('');
   };
 
@@ -217,12 +205,20 @@ export default function CapacityIntroPage() {
     }
   };
 
+  const progressPercent = Math.round((progress.current / progress.total) * 100);
+
   // Loading state
   if (state === 'loading') {
     return (
-      <div className="min-h-screen bg-[#011c40] flex items-center justify-center">
-        <Atmosphere />
-        <div className="text-[#54acbf] text-xl">Loading...</div>
+      <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center relative overflow-hidden">
+        <div className="fixed inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-[-20%] right-[-10%] w-[60%] h-[60%] bg-[#6366f1]/10 blur-[120px] rounded-full"></div>
+          <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#06b6d4]/10 blur-[100px] rounded-full"></div>
+        </div>
+        <div className="relative z-10 text-center">
+          <div className="w-8 h-8 border-2 border-[#6366f1]/30 border-t-[#6366f1] rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-400">Loading...</p>
+        </div>
       </div>
     );
   }
@@ -230,12 +226,15 @@ export default function CapacityIntroPage() {
   // Skipped state
   if (state === 'skipped') {
     return (
-      <div className="min-h-screen bg-[#011c40] flex items-center justify-center">
-        <Atmosphere />
-        <CardFrame className="p-8 text-center">
-          <div className="text-[#54acbf] text-xl mb-4">Capacity benchmarks skipped</div>
-          <div className="text-[#54acbf]/60 text-sm">Redirecting to results...</div>
-        </CardFrame>
+      <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center relative overflow-hidden">
+        <div className="fixed inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-[-20%] right-[-10%] w-[60%] h-[60%] bg-[#6366f1]/10 blur-[120px] rounded-full"></div>
+          <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#06b6d4]/10 blur-[100px] rounded-full"></div>
+        </div>
+        <div className="relative z-10 p-8 bg-[#1a1a24] border border-white/10 rounded-2xl text-center">
+          <div className="text-xl text-white mb-4">Capacity benchmarks skipped</div>
+          <div className="text-gray-500 text-sm">Redirecting to results...</div>
+        </div>
       </div>
     );
   }
@@ -243,24 +242,30 @@ export default function CapacityIntroPage() {
   // Complete state
   if (state === 'complete') {
     return (
-      <div className="min-h-screen bg-[#011c40] flex items-center justify-center p-4">
-        <Atmosphere />
-        <CardFrame className="p-8 max-w-lg text-center">
+      <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center relative overflow-hidden p-4">
+        <div className="fixed inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-[-20%] right-[-10%] w-[60%] h-[60%] bg-[#6366f1]/10 blur-[120px] rounded-full"></div>
+          <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#06b6d4]/10 blur-[100px] rounded-full"></div>
+        </div>
+        <div className="relative z-10 p-8 bg-[#1a1a24] border border-white/10 rounded-2xl max-w-lg text-center">
           <div className="text-4xl mb-4">✨</div>
-          <h2 className="text-2xl text-[#f8f5f0] mb-4">Intro Complete</h2>
-          <p className="text-[#54acbf]/80 mb-6">
+          <h2 className="text-2xl text-white mb-4">Intro Complete</h2>
+          <p className="text-gray-400 mb-6">
             You've completed the capacity preview. Your results now include preliminary cognitive scores.
           </p>
-          <div className="bg-[#54acbf]/10 border border-[#54acbf]/30 rounded-lg p-4 mb-6">
-            <p className="text-[#54acbf] text-sm">
-              <strong>Want more accurate results?</strong> Take full benchmarks after viewing your matches 
+          <div className="bg-[#6366f1]/10 border border-[#6366f1]/30 rounded-xl p-4 mb-6">
+            <p className="text-[#6366f1] text-sm">
+              <strong>Want more accurate results?</strong> Take full benchmarks after viewing your matches
               to improve your confidence grade from C to A.
             </p>
           </div>
-          <ArcaneButton onClick={goToResults} className="w-full">
+          <button
+            onClick={goToResults}
+            className="w-full px-8 py-3 rounded-xl font-semibold bg-[#6366f1] text-white shadow-[0_0_20px_rgba(99,102,241,0.4)] hover:shadow-[0_0_30px_rgba(99,102,241,0.6)] transition-all duration-300"
+          >
             View Results
-          </ArcaneButton>
-        </CardFrame>
+          </button>
+        </div>
       </div>
     );
   }
@@ -268,56 +273,70 @@ export default function CapacityIntroPage() {
   const capacityInfo = currentItem ? CAPACITY_LABELS[currentItem.capacity_type] : null;
 
   return (
-    <div className="min-h-screen bg-[#011c40] flex flex-col">
-      <Atmosphere />
-      
+    <div className="min-h-screen bg-[#0a0a0f] flex flex-col relative overflow-hidden">
+      {/* Background */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-[-20%] right-[-10%] w-[60%] h-[60%] bg-[#6366f1]/10 blur-[120px] rounded-full"></div>
+        <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#06b6d4]/10 blur-[100px] rounded-full"></div>
+      </div>
+
       {/* Header */}
-      <header className="p-4 flex items-center justify-between">
+      <header className="relative z-10 p-4 flex items-center justify-between border-b border-white/10">
         <div className="flex items-center gap-2">
-          <GemIcon className="w-6 h-6 text-[#54acbf]" />
-          <span className="text-[#f8f5f0] font-medium">Capacity Preview</span>
+          <div className="w-8 h-8 rounded-lg bg-[#6366f1]/20 flex items-center justify-center">
+            <span className="text-[#6366f1] font-bold text-sm">C</span>
+          </div>
+          <span className="text-white font-medium">Capacity Preview</span>
         </div>
         <button
           onClick={handleSkipAll}
-          className="text-[#54acbf]/60 hover:text-[#54acbf] text-sm transition-colors"
+          className="text-gray-500 hover:text-white text-sm transition-colors"
         >
           Skip All →
         </button>
       </header>
 
       {/* Progress */}
-      <div className="px-4 mb-6">
-        <ProgressIndicator 
-          current={progress.current} 
-          total={progress.total}
-          label={`${progress.current} of ${progress.total}`}
-        />
+      <div className="relative z-10 px-4 py-3">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-gray-500 text-sm">{progress.current} of {progress.total}</span>
+          <span className="text-gray-500 text-sm">{progressPercent}%</span>
+        </div>
+        <div className="w-full h-2 bg-[#1a1a24] rounded-full overflow-hidden">
+          <div
+            className="h-full bg-gradient-to-r from-[#6366f1] to-[#06b6d4] transition-all duration-500"
+            style={{ width: `${progressPercent}%` }}
+          />
+        </div>
       </div>
 
       {/* Main Content */}
-      <main className="flex-1 flex items-center justify-center p-4">
-        <CardFrame className="w-full max-w-2xl p-6">
+      <main className="relative z-10 flex-1 flex items-center justify-center p-4">
+        <div className="w-full max-w-2xl p-6 bg-[#1a1a24] border border-white/10 rounded-2xl">
           {/* Intro screen before starting item */}
           {state === 'intro' && capacityInfo && (
             <div className="text-center">
               <div className="text-4xl mb-4">{capacityInfo.icon}</div>
-              <h2 className="text-2xl text-[#f8f5f0] mb-2">{capacityInfo.name}</h2>
-              <p className="text-[#54acbf]/80 mb-6">{capacityInfo.description}</p>
-              
-              <div className="bg-[#54acbf]/10 border border-[#54acbf]/30 rounded-lg p-4 mb-6">
-                <div className="flex items-center justify-center gap-2 text-[#54acbf]">
+              <h2 className="text-2xl text-white mb-2">{capacityInfo.name}</h2>
+              <p className="text-gray-400 mb-6">{capacityInfo.description}</p>
+
+              <div className="bg-[#6366f1]/10 border border-[#6366f1]/30 rounded-xl p-4 mb-6">
+                <div className="flex items-center justify-center gap-2 text-[#6366f1]">
                   <span className="text-lg">⏱</span>
                   <span>{currentItem?.time_limit} seconds</span>
                 </div>
               </div>
 
               <div className="flex gap-4 justify-center">
-                <ArcaneButton onClick={beginItem}>
+                <button
+                  onClick={beginItem}
+                  className="px-8 py-3 rounded-xl font-semibold bg-[#6366f1] text-white shadow-[0_0_20px_rgba(99,102,241,0.4)] hover:shadow-[0_0_30px_rgba(99,102,241,0.6)] transition-all duration-300"
+                >
                   Begin
-                </ArcaneButton>
+                </button>
                 <button
                   onClick={handleSkip}
-                  className="text-[#54acbf]/60 hover:text-[#54acbf] text-sm transition-colors px-4"
+                  className="text-gray-500 hover:text-white text-sm transition-colors px-4"
                 >
                   Skip this one
                 </button>
@@ -330,9 +349,9 @@ export default function CapacityIntroPage() {
             <div>
               {/* Timer */}
               <div className="mb-6">
-                <Timer 
+                <Timer
                   key={timerKey}
-                  seconds={currentItem.time_limit} 
+                  seconds={currentItem.time_limit}
                   onTimeout={handleTimeout}
                   running={state === 'item'}
                 />
@@ -354,7 +373,7 @@ export default function CapacityIntroPage() {
               </div>
             </div>
           )}
-        </CardFrame>
+        </div>
       </main>
     </div>
   );
