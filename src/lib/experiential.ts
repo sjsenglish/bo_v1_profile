@@ -376,6 +376,7 @@ export function getOptionalTasks(
  */
 export async function saveExperientialResponse(
   sessionId: string,
+  userId: string,
   taskId: string,
   response: Record<string, any>,
   score: number,
@@ -390,6 +391,7 @@ export async function saveExperientialResponse(
     .from('bo_v1_experiential_responses')
     .insert({
       session_id: sessionId,
+      user_id: userId,
       task_id: taskId,
       response,
       score,

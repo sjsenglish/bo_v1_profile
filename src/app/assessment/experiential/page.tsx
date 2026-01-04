@@ -41,9 +41,10 @@ import { supabase } from '@/lib/supabase';
 
 export default function ExperientialPage() {
   const router = useRouter();
-  
+
   // === STATE ===
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [tasks, setTasks] = useState<ExperientialTask[]>([]);
   const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
@@ -74,6 +75,14 @@ export default function ExperientialPage() {
   // === INITIALISATION ===
   useEffect(() => {
     async function init() {
+      // Get authenticated user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        router.push('/');
+        return;
+      }
+      setUserId(user.id);
+
       // Check we have a session
       const assessmentState = getInitialState();
       if (!assessmentState.sessionId) {
@@ -169,15 +178,16 @@ export default function ExperientialPage() {
    * Called after user provides ratings - saves everything and moves on
    */
   const handleRatingsComplete = async () => {
-    if (!currentTask || !sessionId || !taskResult) return;
-    
+    if (!currentTask || !sessionId || !userId || !taskResult) return;
+
     setAnimating(true);
-    
+
     const timeTaken = Date.now() - startTimeRef.current;
-    
+
     // Save to database
     await saveExperientialResponse(
       sessionId,
+      userId,
       currentTask.id,
       currentResponse,
       taskResult.score,

@@ -5,10 +5,12 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+function getSupabaseClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+}
 
 // Fixed showcase items - one per benchmark, curated for engagement
 const INTRO_ITEMS: Record<string, string> = {
@@ -20,7 +22,16 @@ const INTRO_ITEMS: Record<string, string> = {
 const INTRO_ORDER = ['VRB', 'QNT', 'SPD'];
 
 export async function POST(request: NextRequest) {
+  const supabase = getSupabaseClient();
+
   try {
+    // Get authenticated user
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const body = await request.json();
     const { session_id, action, capacity_type, response, response_time_ms } = body;
 
@@ -28,11 +39,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'session_id required' }, { status: 400 });
     }
 
-    // Validate session exists
+    // Validate session exists and belongs to user
     const { data: session, error: sessionError } = await supabase
       .from('bo_v1_sessions')
       .select('id')
       .eq('id', session_id)
+      .eq('user_id', user.id)
       .single();
 
     if (sessionError || !session) {
@@ -41,9 +53,9 @@ export async function POST(request: NextRequest) {
 
     switch (action) {
       case 'start':
-        return handleStart(session_id);
+        return handleStart(session_id, user.id);
       case 'respond':
-        return handleRespond(session_id, capacity_type, response, response_time_ms);
+        return handleRespond(session_id, user.id, capacity_type, response, response_time_ms);
       case 'skip':
         return handleSkip(session_id, capacity_type);
       case 'skip_all':
@@ -59,7 +71,9 @@ export async function POST(request: NextRequest) {
 }
 
 // Start intro flow - check what's already done, return first pending item
-async function handleStart(session_id: string) {
+async function handleStart(session_id: string, user_id: string) {
+  const supabase = getSupabaseClient();
+
   // Check which intro items have already been completed
   const { data: existingResponses } = await supabase
     .from('bo_v1_capacity_responses')
@@ -102,11 +116,14 @@ async function handleStart(session_id: string) {
 
 // Handle response to an intro item
 async function handleRespond(
-  session_id: string, 
-  capacity_type: string, 
-  response: any, 
+  session_id: string,
+  user_id: string,
+  capacity_type: string,
+  response: any,
   response_time_ms?: number
 ) {
+  const supabase = getSupabaseClient();
+
   if (!capacity_type || !INTRO_ITEMS[capacity_type]) {
     return NextResponse.json({ error: 'Invalid capacity_type' }, { status: 400 });
   }
@@ -148,6 +165,7 @@ async function handleRespond(
     .from('bo_v1_capacity_responses')
     .insert({
       session_id,
+      user_id,
       item_id: itemId,
       response: JSON.stringify(response),
       score: scoreResult.score,
@@ -218,6 +236,8 @@ async function handleRespond(
 
 // Skip a single benchmark in intro flow
 async function handleSkip(session_id: string, capacity_type: string) {
+  const supabase = getSupabaseClient();
+
   if (!capacity_type || !INTRO_ITEMS[capacity_type]) {
     return NextResponse.json({ error: 'Invalid capacity_type' }, { status: 400 });
   }
@@ -265,6 +285,8 @@ async function handleSkip(session_id: string, capacity_type: string) {
 
 // Skip entire intro flow
 async function handleSkipAll(session_id: string) {
+  const supabase = getSupabaseClient();
+
   // Just mark as done with 0 benchmarks
   await supabase
     .from('bo_v1_sessions')
@@ -279,8 +301,9 @@ async function handleSkipAll(session_id: string) {
 
 // Get formatted intro item
 async function getIntroItem(capacity_type: string) {
+  const supabase = getSupabaseClient();
   const itemId = INTRO_ITEMS[capacity_type];
-  
+
   const { data: item } = await supabase
     .from('bo_v1_capacity_items')
     .select('id, tier, interaction_type, stimulus, question, options, time_limit_seconds')

@@ -4,12 +4,16 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+function getSupabaseClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+}
 
 export async function POST(request: NextRequest) {
+  const supabase = getSupabaseClient();
+
   try {
     const body = await request.json();
     const { session_id, capacity_type } = body;
@@ -131,10 +135,12 @@ export async function POST(request: NextRequest) {
 
 // Helper: Get next item based on CAT state
 async function getNextItem(
-  session_id: string, 
-  capacity_type: string, 
+  session_id: string,
+  capacity_type: string,
   state: any
 ): Promise<any> {
+  const supabase = getSupabaseClient();
+
   const { data: item } = await supabase
     .from('bo_v1_capacity_items')
     .select('id, tier, interaction_type, stimulus, question, options, time_limit_seconds')

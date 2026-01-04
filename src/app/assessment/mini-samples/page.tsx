@@ -112,25 +112,38 @@ export default function MiniSamplesPage() {
   const [showEnjoyment, setShowEnjoyment] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
   const [state, setState] = useState(getInitialState());
   const [tempResponse, setTempResponse] = useState<{ response: string; timeTaken: number } | null>(null);
 
   const currentTask = TASKS[currentTaskIndex];
 
-  // Load session
+  // Load session and user
   useEffect(() => {
-    const initialState = getInitialState();
-    if (!initialState.sessionId) {
-      router.push('/');
-      return;
-    }
-    setSessionId(initialState.sessionId);
-    setState(initialState);
-    // Resume from where user left off
-    const completedCount = initialState.miniSampleResponses?.length || 0;
-    if (completedCount > 0 && completedCount < TASKS.length) {
-      setCurrentTaskIndex(completedCount);
-    }
+    const initAuth = async () => {
+      // Get authenticated user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        router.push('/');
+        return;
+      }
+      setUserId(user.id);
+
+      const initialState = getInitialState();
+      if (!initialState.sessionId) {
+        router.push('/');
+        return;
+      }
+      setSessionId(initialState.sessionId);
+      setState(initialState);
+      // Resume from where user left off
+      const completedCount = initialState.miniSampleResponses?.length || 0;
+      if (completedCount > 0 && completedCount < TASKS.length) {
+        setCurrentTaskIndex(completedCount);
+      }
+    };
+
+    initAuth();
   }, [router]);
 
   const handleTaskComplete = (data: { response: string; timeTaken: number }) => {
@@ -139,7 +152,7 @@ export default function MiniSamplesPage() {
   };
 
   const handleEnjoymentComplete = async (enjoyment: EnjoymentRating, careerFit: EnjoymentRating) => {
-    if (submitting || !sessionId || !tempResponse) return;
+    if (submitting || !sessionId || !userId || !tempResponse) return;
     setSubmitting(true);
 
     const { response, timeTaken } = tempResponse;
@@ -166,6 +179,7 @@ export default function MiniSamplesPage() {
     // Save to database
     await supabase.from('bo_v1_mini_sample_responses').insert({
       session_id: sessionId,
+      user_id: userId,
       task_id: String(currentTask.id),
       response_text: response,
       score,

@@ -5,10 +5,12 @@ import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+function getSupabaseClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+}
 
 // Anthropic client for LLM scoring (lazy init)
 let anthropic: Anthropic | null = null;
@@ -20,15 +22,36 @@ function getAnthropic(): Anthropic {
 }
 
 export async function POST(request: NextRequest) {
+  const supabase = getSupabaseClient();
+
   try {
+    // Get authenticated user
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const body = await request.json();
     const { session_id, capacity_type, item_id, response, response_time_ms } = body;
 
     // Validate inputs
     if (!session_id || !capacity_type || !item_id || response === undefined) {
-      return NextResponse.json({ 
-        error: 'Missing required fields: session_id, capacity_type, item_id, response' 
+      return NextResponse.json({
+        error: 'Missing required fields: session_id, capacity_type, item_id, response'
       }, { status: 400 });
+    }
+
+    // Verify session belongs to user
+    const { data: sessionCheck } = await supabase
+      .from('bo_v1_sessions')
+      .select('id')
+      .eq('id', session_id)
+      .eq('user_id', user.id)
+      .single();
+
+    if (!sessionCheck) {
+      return NextResponse.json({ error: 'Invalid session_id' }, { status: 403 });
     }
 
     // Get item details
@@ -67,6 +90,7 @@ export async function POST(request: NextRequest) {
       .from('bo_v1_capacity_responses')
       .insert({
         session_id,
+        user_id: user.id,
         item_id,
         response: JSON.stringify(response),
         score: scoreResult.score,
@@ -423,8 +447,10 @@ async function getNextItem(
   tier: string,
   administered: string[]
 ): Promise<any> {
+  const supabase = getSupabaseClient();
+
   // Build exclusion list
-  const exclusionList = administered.length > 0 
+  const exclusionList = administered.length > 0
     ? administered.map(id => `'${id}'`).join(',')
     : "''";
 
@@ -467,6 +493,8 @@ async function getNextItem(
 
 // Calculate final scores
 async function calculateFinalScores(session_id: string, capacity_type: string): Promise<any> {
+  const supabase = getSupabaseClient();
+
   const tierWeights: Record<string, number> = {
     'FOUNDATION': 0.8,
     'STANDARD': 1.0,
@@ -541,8 +569,9 @@ async function calculateFinalScores(session_id: string, capacity_type: string): 
 
 // Update profile with measured capacity
 async function updateProfileCapacity(session_id: string, capacity_type: string, scores: any): Promise<void> {
+  const supabase = getSupabaseClient();
   const prefix = capacity_type.toLowerCase();
-  
+
   const updateData: Record<string, any> = {
     [`${prefix}_value`]: scores.value,
     [`${prefix}_sigma`]: scores.sigma,
