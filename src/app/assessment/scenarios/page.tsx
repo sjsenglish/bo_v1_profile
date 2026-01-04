@@ -264,13 +264,13 @@ export default function ScenariosPage() {
       response_time_ms: responseTime,
     };
 
-    // Save to database
-    await supabase.from('bo_v1_scenario_responses').insert({
+    // Save to database (upsert to handle page refresh/back navigation)
+    await supabase.from('bo_v1_scenario_responses').upsert({
       session_id: sessionId,
       scenario_id: currentScenario.id,
       position: sliderValue,
       response_time_ms: responseTime,
-    });
+    }, { onConflict: 'session_id,scenario_id' });
 
     // Update local state
     const newState = addScenarioResponse(state, response);

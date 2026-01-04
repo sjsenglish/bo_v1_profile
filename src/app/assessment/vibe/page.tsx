@@ -106,13 +106,13 @@ export default function VibeSwiperPage() {
       response_time_ms: responseTime,
     };
 
-    // Save to database
-    await supabase.from('bo_v1_vibe_choices').insert({
+    // Save to database (upsert to handle page refresh/back navigation)
+    await supabase.from('bo_v1_vibe_choices').upsert({
       session_id: sessionId,
       pair_id: currentPair.id,
       option_chosen: optionChosen,
       response_time_ms: responseTime,
-    });
+    }, { onConflict: 'session_id,pair_id' });
 
     // Update local state
     const newState = addVibeChoice(state, choice);
