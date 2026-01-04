@@ -8,7 +8,7 @@ interface AssessmentTaskProps {
     task: Task;
     currentTaskIndex: number;
     totalTasks: number;
-    onComplete: () => void;
+    onComplete: (data: { response: string; timeTaken: number }) => void;
     onSkip: () => void;
 }
 
@@ -90,6 +90,12 @@ const AssessmentTask: React.FC<AssessmentTaskProps> = ({ task, currentTaskIndex,
 
     const progressPercent = Math.round(((currentTaskIndex) / totalTasks) * 100);
 
+    const handleComplete = () => {
+        const timeTaken = task.timeLimit - timeLeft;
+        const answer = task.type === 'MCQ' ? (selectedOption || "") : textResponse;
+        onComplete({ response: answer, timeTaken });
+    };
+
     return (
         <div className="flex flex-col h-screen bg-background text-white">
             {/* Header */}
@@ -147,8 +153,8 @@ const AssessmentTask: React.FC<AssessmentTaskProps> = ({ task, currentTaskIndex,
                                     <label
                                         key={idx}
                                         className={`flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 group ${selectedOption === opt
-                                                ? 'bg-primary/10 border-primary shadow-[0_0_15px_rgba(99,102,241,0.2)]'
-                                                : 'bg-surface border-white/5 hover:border-white/20'
+                                            ? 'bg-primary/10 border-primary shadow-[0_0_15px_rgba(99,102,241,0.2)]'
+                                            : 'bg-surface border-white/5 hover:border-white/20'
                                             }`}
                                     >
                                         <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center mr-4 transition-colors ${selectedOption === opt ? 'border-primary' : 'border-gray-600 group-hover:border-gray-400'
@@ -207,7 +213,7 @@ const AssessmentTask: React.FC<AssessmentTaskProps> = ({ task, currentTaskIndex,
                         variant="primary"
                         size="lg"
                         disabled={!isValid}
-                        onClick={onComplete}
+                        onClick={handleComplete}
                         className="min-w-[160px]"
                     >
                         Submit
