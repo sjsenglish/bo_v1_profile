@@ -27,8 +27,20 @@ const config: Config = {
           // Tertiary
           'gold': '#d4a55a',
         },
+        // UI Overhaul Colors
+        background: '#0B0F19',
+        surface: '#151B2B',
+        surfaceHighlight: '#1F2937',
+        primary: '#6366F1', // Indigo 500
+        primaryGlow: '#818CF8', // Indigo 400
+        accent: '#EC4899', // Pink 500
+        success: '#10B981', // Emerald 500
+        warning: '#F59E0B', // Amber 500
+        error: '#EF4444', // Red 500
+        'gaming-purple': '#7C3AED',
+        'gaming-cyan': '#06B6D4',
       },
-      
+
       /**
        * ARCANE FONTS
        */
@@ -36,7 +48,7 @@ const config: Config = {
         sans: ['Inter', 'system-ui', 'sans-serif'],
         serif: ['Libre Baskerville', 'Georgia', 'serif'],
       },
-      
+
       /**
        * ARCANE ANIMATIONS
        */
@@ -54,7 +66,7 @@ const config: Config = {
         'arcane-slide-up': 'arcane-slide-up 0.6s ease-out',
         'arcane-scale-in': 'arcane-scale-in 0.4s ease-out',
       },
-      
+
       keyframes: {
         'arcane-spin-chase': {
           '0%': { transform: 'rotate(0deg)' },
@@ -67,13 +79,13 @@ const config: Config = {
           '100%': { transform: 'rotate(0deg)' },
         },
         'arcane-pulse-glow': {
-          '0%, 100%': { 
-            transform: 'scale(1.5) rotate(45deg)', 
+          '0%, 100%': {
+            transform: 'scale(1.5) rotate(45deg)',
             opacity: '1',
             filter: 'drop-shadow(0 0 10px #54acbf)',
           },
-          '50%': { 
-            transform: 'scale(1.8) rotate(45deg)', 
+          '50%': {
+            transform: 'scale(1.8) rotate(45deg)',
             opacity: '0.7',
             filter: 'drop-shadow(0 0 25px #54acbf)',
           },
@@ -83,11 +95,11 @@ const config: Config = {
           '50%': { transform: 'translateY(-10px)' },
         },
         'arcane-float': {
-          '0%, 100%': { 
+          '0%, 100%': {
             transform: 'translateY(0) translateX(0)',
             opacity: '0.3',
           },
-          '50%': { 
+          '50%': {
             transform: 'translateY(-30px) translateX(10px)',
             opacity: '0.6',
           },
@@ -97,27 +109,27 @@ const config: Config = {
           '100%': { opacity: '1' },
         },
         'arcane-slide-up': {
-          '0%': { 
+          '0%': {
             opacity: '0',
             transform: 'translateY(20px)',
           },
-          '100%': { 
+          '100%': {
             opacity: '1',
             transform: 'translateY(0)',
           },
         },
         'arcane-scale-in': {
-          '0%': { 
+          '0%': {
             opacity: '0',
             transform: 'scale(0.95)',
           },
-          '100%': { 
+          '100%': {
             opacity: '1',
             transform: 'scale(1)',
           },
         },
       },
-      
+
       /**
        * ARCANE BOX SHADOWS
        */
@@ -125,8 +137,10 @@ const config: Config = {
         'arcane-teal': '0 0 30px rgba(84, 172, 191, 0.4)',
         'arcane-ice': '0 0 20px rgba(167, 235, 242, 0.3)',
         'arcane-gold': '0 0 25px rgba(212, 165, 90, 0.3)',
+        'neon': '0 0 5px theme("colors.primary"), 0 0 20px theme("colors.primary")',
+        'neon-accent': '0 0 5px theme("colors.accent"), 0 0 20px theme("colors.accent")',
       },
-      
+
       /**
        * ARCANE GRADIENTS (via backgroundImage)
        */

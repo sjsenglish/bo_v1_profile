@@ -26,678 +26,247 @@ interface ProfileData {
   dominant: string;
   nemesis: string;
   vrb_value: number;
-  vrb_provenance: string;
   qnt_value: number;
-  qnt_provenance: string;
   spd_value: number;
-  spd_provenance: string;
-  level?: number;
-  total_xp?: number;
-  precision_score?: number;
-  precision_tier?: string;
-  cluster_preferences?: Record<string, number>;
-  cluster_capabilities?: Record<string, number>;
-}
-
-interface SessionData {
-  benchmarks_completed: number;
-  mini_samples_completed: boolean;
-  scenarios_completed: boolean;
-}
-
-interface MiniSampleResponse {
-  task_id: string;
-  score: number;
-  enjoyment_rating: number;
-  career_fit_rating: number;
-  bo_v1_mini_samples: {
-    meta_cluster: string;
-    title: string;
-  } | null;
-}
-
-// Early Indicators Component
-function EarlyIndicators({ miniSampleResults }: { miniSampleResults: MiniSampleResponse[] }) {
-  if (!miniSampleResults || miniSampleResults.length === 0) return null;
-
-  const CLUSTER_CONFIG = [
-    { type: 'STEM_TECH', label: 'STEM-Technical', emoji: '🔬', description: 'Computing, Engineering, Maths' },
-    { type: 'STEM_SCI', label: 'STEM-Scientific', emoji: '🧪', description: 'Sciences, Research' },
-    { type: 'HUMANITIES', label: 'Humanities', emoji: '📚', description: 'Law, History, Politics' },
-    { type: 'SOCIAL_SCI', label: 'Social Sciences', emoji: '📊', description: 'Psychology, Economics, Sociology' },
-    { type: 'PROFESSIONAL', label: 'Professional', emoji: '💼', description: 'Business, Medicine, Law' },
-    { type: 'CREATIVE', label: 'Creative', emoji: '🎨', description: 'Arts, Design, Media' },
-  ];
-
-  const ENJOYMENT_LABELS = ['😫 Challenging', '😐 Okay', '😊 Enjoyed'];
-
-  return (
-    <GlassCard className="p-6">
-      <div className="flex items-center justify-between mb-4">
-        <span className="text-[white]/40 text-xs uppercase tracking-wider">Early Indicators</span>
-        <span className="text-[#6366f1] text-xs">from Mini-Samples</span>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {CLUSTER_CONFIG.map(cluster => {
-          const result = miniSampleResults.find(
-            r => r.bo_v1_mini_samples?.meta_cluster === cluster.type
-          );
-
-          if (!result) return (
-            <div key={cluster.type} className="p-4 rounded-xl bg-white/[0.02] border border-white/[0.05] opacity-50">
-              <div className="text-2xl mb-2">{cluster.emoji}</div>
-              <h4 className="text-[white] font-medium">{cluster.label}</h4>
-              <p className="text-[white]/30 text-xs mt-1">Not completed</p>
-            </div>
-          );
-
-          const scorePercent = Math.round((result.score / 3) * 100);
-          const enjoymentLabel = ENJOYMENT_LABELS[result.enjoyment_rating + 1] || '😐 Okay';
-
-          return (
-            <div key={cluster.type} className="p-4 rounded-xl bg-[#6366f1]/5 border border-[#6366f1]/20">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-2xl">{cluster.emoji}</span>
-                <span className={`text-sm font-medium ${
-                  scorePercent >= 70 ? 'text-[#4ade80]' :
-                  scorePercent >= 40 ? 'text-[#6366f1]' : 'text-[#f97316]'
-                }`}>
-                  {scorePercent}%
-                </span>
-              </div>
-              <h4 className="text-[white] font-medium mb-1">{cluster.label}</h4>
-              <p className="text-[white]/40 text-xs mb-3">{cluster.description}</p>
-              <div className="flex items-center gap-2">
-                <span className="text-xs">{enjoymentLabel}</span>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </GlassCard>
-  );
-}
-
-// Sharpening CTAs Component
-function SharpeningCTAs({ precisionScore }: { precisionScore: number }) {
-  const activities = [
-    { name: 'Reasoning Challenges', time: '~4 min', precision: '+15%', icon: '🧩', available: true },
-    { name: 'Speed Challenge', time: '~3 min', precision: '+10%', icon: '⚡', available: false },
-    { name: 'More Scenarios', time: '~4 min', precision: '+12%', icon: '🎯', available: false },
-    { name: 'Challenge Mini-Samples', time: '~3 min', precision: '+8%', icon: '🔥', available: false },
-  ];
-
-  return (
-    <GlassCard className="p-5">
-      <div className="flex items-center justify-between mb-4">
-        <span className="text-[white]/40 text-xs uppercase tracking-wider">Sharpen Profile</span>
-        <span className="text-[#6366f1] text-xs">{precisionScore || 40}% precision</span>
-      </div>
-
-      <div className="space-y-2">
-        {activities.map((activity, i) => (
-          <div
-            key={i}
-            className={`
-              p-3 rounded-xl border transition-all
-              ${activity.available
-                ? 'bg-[#6366f1]/10 border-[#6366f1]/30 cursor-pointer hover:bg-[#6366f1]/20'
-                : 'bg-white/[0.02] border-white/[0.05] opacity-60'}
-            `}
-          >
-            <div className="flex items-center gap-3">
-              <span className="text-lg">{activity.icon}</span>
-              <div className="flex-1">
-                <p className={`text-sm font-medium ${activity.available ? 'text-[white]' : 'text-[white]/50'}`}>
-                  {activity.name}
-                </p>
-                <p className="text-[white]/30 text-xs">{activity.time}</p>
-              </div>
-              <span className={`text-xs font-medium ${activity.available ? 'text-[#4ade80]' : 'text-[white]/30'}`}>
-                {activity.precision}
-              </span>
-            </div>
-            {!activity.available && (
-              <p className="text-[white]/20 text-xs mt-2 ml-8">Coming soon</p>
-            )}
-          </div>
-        ))}
-      </div>
-
-      {precisionScore < 70 && (
-        <p className="text-[#6366f1]/60 text-xs text-center mt-4">
-          Reach 70% to unlock your Familiar & Guild
-        </p>
-      )}
-    </GlassCard>
-  );
 }
 
 interface MatchData {
-  rank: number;
+  course_id: string;
   score: number;
+  fit_score: number;
   friction: string;
-  cognitive_score: number;
-  behavioral_penalty: number;
-  vibe_bonus: number;
-  course: {
+  rank: number;
+  bo_v1_courses: {
     id: string;
-    university: string;
     course_name: string;
-    cah_code: string;
-    nss_overall: number | null;
-    employment_rate: number | null;
-    median_salary_5yr: number | null;
-    russell_group?: boolean;
-    location?: string;
+    university: string;
+    russell_group: boolean;
+    employment_rate: number;
+    median_salary_3yr: number;
+    subject_area: string;
+    ucas_points: number;
   };
-}
-
-interface CapacityResults {
-  vrb_items_completed?: number;
-  qnt_items_completed?: number;
-  spd_items_completed?: number;
-}
-
-interface Supercurricular {
-  id: string;
-  type: string;
-  title: string;
-  author: string | null;
-  external_url: string | null;
-  description?: string;
-}
-
-// ============================================================================
-// CONSTANTS
-// ============================================================================
-
-const FRICTION_LABELS: Record<string, { label: string; color: string }> = {
-  LOW: { label: 'Great Fit', color: '#4ade80' },
-  MODERATE: { label: 'Good Fit', color: '#6366f1' },
-  HIGH: { label: 'Stretch', color: '#d4a55a' },
-  VERY_HIGH: { label: 'Challenge', color: '#f97316' },
-  EXTREME: { label: 'Reach', color: '#ef4444' },
-};
-
-const TYPE_ICONS: Record<string, string> = {
-  BOOK: '📖',
-  COURSE: '💻',
-  COMPETITION: '🏆',
-  WORK_EXPERIENCE: '💼',
-  VOLUNTEERING: '🤝',
-  EPQ: '📝',
-  SUMMER_SCHOOL: '🎓',
-  PODCAST: '🎧',
-  VIDEO: '🎬',
-  RESEARCH: '🔬',
-  ARTICLE: '📄',
-};
-
-const CAH_TO_CLUSTER: Record<string, string> = {
-  'CAH01': 'MED', 'CAH02': 'MED', 'CAH05': 'MED',
-  'CAH03': 'STEM_LIFE', 'CAH04': 'STEM_LIFE', 'CAH06': 'STEM_LIFE',
-  'CAH07': 'STEM_PHYS', 'CAH09': 'STEM_PHYS', 'CAH08': 'ENV',
-  'CAH10': 'ENG', 'CAH11': 'COMP', 'CAH12': 'LAW',
-  'CAH14': 'HUM', 'CAH19': 'HUM', 'CAH20': 'HUM', 'CAH21': 'HUM',
-  'CAH15': 'SOC', 'CAH16': 'SOC', 'CAH17': 'BUS', 'CAH18': 'SOC',
-  'CAH22': 'EDU', 'CAH23': 'LANG', 'CAH24': 'LANG',
-};
-
-const DISPOSITION_CONFIG = [
-  { key: 'calibration', label: 'Calibration', description: 'Self-awareness accuracy' },
-  { key: 'tolerance', label: 'Tolerance', description: 'Persistence through difficulty' },
-  { key: 'transfer', label: 'Transfer', description: 'Cross-domain thinking' },
-  { key: 'precision', label: 'Precision', description: 'Attention to detail' },
-  { key: 'retrieval', label: 'Retrieval', description: 'Active recall ability' },
-  { key: 'receptivity', label: 'Receptivity', description: 'Openness to feedback' },
-];
-
-// ============================================================================
-// UTILITY FUNCTIONS
-// ============================================================================
-
-function calculateConfidenceGrade(
-  session: SessionData | null,
-  capacityResults: CapacityResults | null
-): { grade: string; percentage: number; message: string; color: string } {
-  const fullBenchmarks = [
-    (capacityResults?.vrb_items_completed || 0) >= 12,
-    (capacityResults?.qnt_items_completed || 0) >= 12,
-    (capacityResults?.spd_items_completed || 0) >= 12,
-  ].filter(Boolean).length;
-
-  const introItems = [
-    (capacityResults?.vrb_items_completed || 0) > 0 && (capacityResults?.vrb_items_completed || 0) < 12,
-    (capacityResults?.qnt_items_completed || 0) > 0 && (capacityResults?.qnt_items_completed || 0) < 12,
-    (capacityResults?.spd_items_completed || 0) > 0 && (capacityResults?.spd_items_completed || 0) < 12,
-  ].filter(Boolean).length;
-
-  if (fullBenchmarks >= 2) {
-    return { grade: 'A', percentage: 95, message: 'High accuracy results', color: '#4ade80' };
-  }
-  if (fullBenchmarks === 1) {
-    return { grade: 'B', percentage: 75, message: 'Take another benchmark for Grade A', color: '#6366f1' };
-  }
-  if (introItems > 0 || (session?.benchmarks_completed || 0) > 0) {
-    return { grade: 'C', percentage: 50, message: 'Complete benchmarks for better accuracy', color: '#d4a55a' };
-  }
-  return { grade: 'D', percentage: 25, message: 'Take benchmarks to improve accuracy', color: '#ef4444' };
-}
-
-function generateTutorMessage(profile: ProfileData): string {
-  // Placeholder — will be replaced with API call
-  const dominant = profile.dominant?.toLowerCase() || 'analytical';
-  const topDisposition = DISPOSITION_CONFIG
-    .map(d => ({ ...d, value: (profile as any)[d.key] || 0 }))
-    .sort((a, b) => b.value - a.value)[0];
-  
-  return `Your ${topDisposition.label.toLowerCase()} scores suggest you'd thrive in environments that reward ${topDisposition.description.toLowerCase()}. The courses below have been selected to match your cognitive profile — pay attention to the "Great Fit" matches for the smoothest academic transition.`;
 }
 
 // ============================================================================
 // COMPONENTS
 // ============================================================================
 
-function GlassCard({
-  children,
-  className = '',
-  hover = false,
-}: {
-  children: React.ReactNode;
-  className?: string;
-  hover?: boolean;
-}) {
-  return (
-    <div className={`
-      bg-[#1a1a24]/80
-      backdrop-blur-xl
-      border border-white/10
-      rounded-2xl
-      ${hover ? 'hover:bg-[#1a1a24] hover:border-[#6366f1]/30 transition-all duration-300' : ''}
-      ${className}
-    `}>
-      {children}
-    </div>
-  );
-}
+function ProfileCard({ profile }: { profile: ProfileData }) {
+  const familiar = getFamiliarById(profile.familiar_id as any);
+  const guild = getGuildById(profile.guild_id as any);
 
-// Constellation Map Component
-function ConstellationMap({ profile }: { profile: ProfileData }) {
-  const centerX = 150;
-  const centerY = 150;
-  const radius = 100;
-  
-  const nodes = DISPOSITION_CONFIG.map((d, i) => {
-    const angle = (i * 60 - 90) * (Math.PI / 180); // Start from top, 60° apart
-    const value = (profile as any)[d.key] || 50;
-    const nodeRadius = 12 + (value / 100) * 18; // 12-30px based on score
-    
-    return {
-      ...d,
-      value,
-      x: centerX + radius * Math.cos(angle),
-      y: centerY + radius * Math.sin(angle),
-      radius: nodeRadius,
-    };
-  });
+  // Calculate precision score (average of top dispositions)
+  const dispositions = [
+    profile.calibration, profile.tolerance, profile.transfer,
+    profile.precision, profile.retrieval, profile.receptivity,
+    profile.structure, profile.consistency, profile.social, profile.depth
+  ];
+  const avgScore = Math.round(dispositions.reduce((a, b) => a + b, 0) / dispositions.length);
+
+  // Radar data for constellation
+  const radarNodes = [
+    { label: 'Analytical', value: profile.calibration, color: '#22d3ee' },
+    { label: 'Creative', value: profile.transfer, color: '#a855f7' },
+    { label: 'Detail', value: profile.precision, color: '#4ade80' },
+    { label: 'Social', value: profile.social, color: '#fbbf24' },
+    { label: 'Depth', value: profile.depth, color: '#f472b6' },
+    { label: 'Structure', value: profile.structure, color: '#94a3b8' },
+  ];
+
+  const topTraits = [...radarNodes].sort((a, b) => b.value - a.value).slice(0, 2);
 
   return (
-    <div className="relative w-full aspect-square max-w-[300px] mx-auto">
-      <svg viewBox="0 0 300 300" className="w-full h-full">
-        {/* Connecting lines */}
-        {nodes.map((node, i) => (
-          <line
-            key={`line-${i}`}
-            x1={centerX}
-            y1={centerY}
-            x2={node.x}
-            y2={node.y}
-            stroke="#6366f1"
-            strokeWidth="1"
-            strokeOpacity="0.3"
-          />
-        ))}
-        
-        {/* Outer ring (decorative) */}
-        <circle
-          cx={centerX}
-          cy={centerY}
-          r={radius + 30}
-          fill="none"
-          stroke="#6366f1"
-          strokeWidth="1"
-          strokeOpacity="0.1"
-          strokeDasharray="4 4"
-        />
-        
-        {/* Center node - YOU */}
-        <circle
-          cx={centerX}
-          cy={centerY}
-          r={24}
-          fill="#6366f1"
-          fillOpacity="0.3"
-        />
-        <circle
-          cx={centerX}
-          cy={centerY}
-          r={20}
-          fill="#6366f1"
-        />
-        <text
-          x={centerX}
-          y={centerY + 4}
-          textAnchor="middle"
-          fill="#0a0a0f"
-          fontSize="10"
-          fontWeight="600"
-        >
-          YOU
-        </text>
-        
-        {/* Disposition nodes */}
-        {nodes.map((node, i) => (
-          <g key={`node-${i}`}>
-            {/* Glow effect */}
-            <circle
-              cx={node.x}
-              cy={node.y}
-              r={node.radius + 4}
-              fill="#6366f1"
-              fillOpacity="0.15"
-            />
-            {/* Main node */}
-            <circle
-              cx={node.x}
-              cy={node.y}
-              r={node.radius}
-              fill="#0a0a0f"
-              stroke="#6366f1"
-              strokeWidth="2"
-            />
-            {/* Label */}
-            <text
-              x={node.x}
-              y={node.y + node.radius + 16}
-              textAnchor="middle"
-              fill="white"
-              fontSize="9"
-              fontWeight="500"
-              opacity="0.7"
-            >
-              {node.label.toUpperCase()}
-            </text>
-            {/* Value inside node */}
-            <text
-              x={node.x}
-              y={node.y + 4}
-              textAnchor="middle"
-              fill="#6366f1"
-              fontSize="11"
-              fontWeight="600"
-            >
-              {node.value}
-            </text>
-          </g>
-        ))}
-      </svg>
-    </div>
-  );
-}
+    <div className="w-full bg-[#0B0F19] rounded-xl border border-white/10 overflow-hidden">
+      <div className="grid grid-cols-1 lg:grid-cols-3 min-h-[280px] divide-y lg:divide-y-0 lg:divide-x divide-white/5">
 
-// Tutor Message Component
-function TutorMessage({ message }: { message: string }) {
-  return (
-    <GlassCard className="p-5 border-l-2 border-l-[#6366f1]">
-      <div className="flex items-start gap-4">
-        <div className="w-10 h-10 rounded-full bg-[#6366f1]/20 flex items-center justify-center flex-shrink-0">
-          <span className="text-[#6366f1] font-semibold">SJ</span>
-        </div>
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-[#6366f1] text-sm font-medium">Academic Advisor</span>
-            <span className="text-[white]/30 text-xs">• Initial Assessment</span>
+        {/* LEFT: Identity & Precision */}
+        <div className="p-6 flex flex-col justify-between bg-gradient-to-b from-white/[0.02] to-transparent relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-4 opacity-10">
+            <svg className="w-24 h-24" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
           </div>
-          <p className="text-[white]/70 text-sm leading-relaxed italic">
-            "{message}"
-          </p>
-        </div>
-      </div>
-    </GlassCard>
-  );
-}
 
-// Course Card Component
-function CourseCard({ 
-  match, 
-  isExpanded, 
-  onToggle,
-  isPinned,
-  onTogglePin,
-}: { 
-  match: MatchData;
-  isExpanded: boolean;
-  onToggle: () => void;
-  isPinned: boolean;
-  onTogglePin: () => void;
-}) {
-  const [activeTab, setActiveTab] = useState<'vibe' | 'grind' | 'payoff'>('vibe');
-  const friction = FRICTION_LABELS[match.friction] || FRICTION_LABELS.MODERATE;
-  
-  // Generate initials from university name
-  const initials = match.course.university
-    .split(' ')
-    .filter(w => !['of', 'the', 'and'].includes(w.toLowerCase()))
-    .slice(0, 2)
-    .map(w => w[0])
-    .join('')
-    .toUpperCase();
-
-  return (
-    <GlassCard className={`overflow-hidden transition-all duration-300 ${isExpanded ? 'ring-1 ring-[#6366f1]/40' : ''}`}>
-      {/* Header */}
-      <div 
-        className="p-5 cursor-pointer hover:bg-white/[0.02] transition-colors"
-        onClick={onToggle}
-      >
-        <div className="flex items-start gap-4">
-          {/* University badge */}
-          <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#6366f1]/30 to-[#6366f1]/10 flex items-center justify-center flex-shrink-0 border border-[#6366f1]/20">
-            <span className="text-[#6366f1] font-bold text-sm">{initials}</span>
-          </div>
-          
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <h3 className="text-[white] font-medium truncate">{match.course.course_name}</h3>
-                <p className="text-[#6366f1]/60 text-sm truncate mt-0.5">{match.course.university}</p>
-              </div>
-              <div className="flex items-center gap-2 flex-shrink-0">
-                <span 
-                  className="text-xs px-3 py-1.5 rounded-full font-medium"
-                  style={{ 
-                    backgroundColor: `${friction.color}15`,
-                    color: friction.color,
-                    border: `1px solid ${friction.color}30`
-                  }}
-                >
-                  {friction.label}
-                </span>
-                <button
-                  onClick={(e) => { e.stopPropagation(); onTogglePin(); }}
-                  className={`p-1.5 rounded-lg transition-colors ${
-                    isPinned 
-                      ? 'text-[#6366f1] bg-[#6366f1]/10' 
-                      : 'text-[white]/20 hover:text-[#6366f1]/50 hover:bg-white/[0.03]'
-                  }`}
-                >
-                  {isPinned ? '★' : '☆'}
-                </button>
-              </div>
+          <div className="relative z-10">
+            <div className="flex items-center justify-between mb-3">
+              <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded border bg-indigo-900/50 border-indigo-500 text-indigo-300">
+                {guild?.name || 'Foundation'}
+              </span>
             </div>
-            
-            {/* Quick stats row */}
-            <div className="flex items-center gap-4 mt-3">
-              <div className="flex items-center gap-1.5">
-                <span className="text-[white]/30 text-xs">Match</span>
-                <span className="text-[#6366f1] text-sm font-medium">{match.score}%</span>
-              </div>
-              {match.course.russell_group && (
-                <span className="text-xs px-2 py-0.5 rounded-full bg-[#6366f1]/10 text-[#6366f1]/70 border border-[#6366f1]/20">
-                  Russell Group
-                </span>
-              )}
-            </div>
+            <h2 className="text-3xl font-bold text-white tracking-wide">Your Profile</h2>
+            <p className="text-xs text-gray-500 mt-1">Assessment Complete</p>
           </div>
-        </div>
-      </div>
 
-      {/* Expanded Content */}
-      {isExpanded && (
-        <div className="border-t border-white/[0.06]">
-          {/* Tabs */}
-          <div className="flex border-b border-white/[0.06]">
-            {(['vibe', 'grind', 'payoff'] as const).map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`flex-1 py-3 text-xs font-semibold uppercase tracking-wider transition-colors relative ${
-                  activeTab === tab 
-                    ? 'text-[#6366f1]' 
-                    : 'text-[white]/40 hover:text-[white]/60'
-                }`}
+          <div className="relative z-10 mt-6">
+            <span className="text-indigo-400 text-[10px] font-bold uppercase tracking-widest block mb-1 flex items-center">
+              <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+              Overall Score
+            </span>
+            <div className="flex items-baseline space-x-1">
+              <span className="text-6xl font-bold text-white tracking-tighter">{avgScore}</span>
+              <span className="text-2xl text-gray-600">%</span>
+            </div>
+
+            <div className="w-full bg-gray-800/50 h-1.5 mt-4 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-indigo-500 to-cyan-400 relative"
+                style={{ width: `${avgScore}%` }}
               >
-                {tab}
-                {activeTab === tab && (
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#6366f1]" />
-                )}
-              </button>
-            ))}
+                <div className="absolute right-0 top-0 bottom-0 w-[2px] bg-white shadow-[0_0_10px_white]"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* CENTER: Spirit Familiar */}
+        <div className="relative flex flex-col items-center justify-center overflow-hidden bg-[#0D111C] p-6">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-[#6366f1]/10 blur-[50px] rounded-full"></div>
+          <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-black/50 to-transparent z-0"></div>
+
+          <div className="relative z-10 flex flex-col items-center w-full">
+            <div className="w-full flex justify-between items-start mb-4">
+              <div className="flex flex-col">
+                <span className="text-[10px] text-gray-500 font-bold uppercase tracking-[0.2em]">Guild</span>
+                <span className="text-xs font-bold text-indigo-400 uppercase tracking-wider">{guild?.name || '?'}</span>
+              </div>
+              <div className="w-6 h-6 border border-white/20 rounded-sm flex items-center justify-center bg-white/5">
+                <svg className="w-4 h-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+              </div>
+            </div>
+
+            {/* Familiar Icon */}
+            <div className="relative w-24 h-24 my-4">
+              <svg viewBox="0 0 100 100" className="w-full h-full filter drop-shadow-[0_0_15px_rgba(99,102,241,0.4)]">
+                <defs>
+                  <linearGradient id="famGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#fff" />
+                    <stop offset="100%" stopColor="#6366F1" />
+                  </linearGradient>
+                </defs>
+                <path d="M50,20 L85,50 L50,80 L15,50 Z" fill="none" stroke="url(#famGrad)" strokeWidth="2" />
+                <path d="M50,30 L70,50 L50,70 L30,50 Z" fill="#6366F1" opacity="0.3" />
+                <circle cx="50" cy="50" r="12" fill="#fff" />
+                <circle cx="50" cy="50" r="5" fill="#0B0F19" />
+              </svg>
+            </div>
+
+            <div className="text-center w-full">
+              <div className="uppercase tracking-[0.3em] text-[9px] text-gray-500 mb-1 font-bold">Familiar</div>
+              <h3 className="text-xl font-black uppercase tracking-wide text-white">
+                {familiar?.name || 'THE OBSERVER'}
+              </h3>
+              <div className="h-1 w-20 mx-auto mt-2 bg-[#6366f1]"></div>
+            </div>
+          </div>
+        </div>
+
+        {/* RIGHT: Disposition Radar */}
+        <div className="flex flex-col bg-[#0A0C12] min-h-[280px] relative overflow-hidden">
+          <div className="px-5 py-3 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
+            <div className="flex items-center space-x-2 text-indigo-400">
+              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+              <span className="text-[10px] font-bold uppercase tracking-widest">Disposition Profile</span>
+            </div>
           </div>
 
-          {/* Tab Content */}
-          <div className="p-5">
-            {activeTab === 'vibe' && (
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-3 bg-white/[0.02] rounded-lg">
-                    <p className="text-[white]/30 text-xs mb-1">Student Satisfaction</p>
-                    <p className="text-[white] font-medium">
-                      {match.course.nss_overall ? `${match.course.nss_overall}%` : 'N/A'}
-                    </p>
+          <div className="flex-1 p-4">
+            <div className="grid grid-cols-2 gap-3">
+              {radarNodes.map((node) => (
+                <div key={node.label} className="bg-white/[0.02] rounded-lg p-3 border border-white/5">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[10px] text-gray-400 uppercase tracking-wider">{node.label}</span>
+                    <span className="text-sm font-bold text-white">{node.value}</span>
                   </div>
-                  <div className="p-3 bg-white/[0.02] rounded-lg">
-                    <p className="text-[white]/30 text-xs mb-1">Vibe Bonus</p>
-                    <p className="text-[#6366f1] font-medium">+{match.vibe_bonus}</p>
-                  </div>
-                </div>
-                {match.course.russell_group && (
-                  <div className="flex items-center gap-2 p-3 bg-[#6366f1]/5 rounded-lg border border-[#6366f1]/10">
-                    <span className="text-[#6366f1]">✓</span>
-                    <span className="text-[white]/70 text-sm">Russell Group university — research-intensive environment</span>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {activeTab === 'grind' && (
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-3 bg-white/[0.02] rounded-lg">
-                    <p className="text-[white]/30 text-xs mb-1">Cognitive Demand</p>
-                    <p className="text-[white] font-medium">{match.cognitive_score}</p>
-                  </div>
-                  <div className="p-3 bg-white/[0.02] rounded-lg">
-                    <p className="text-[white]/30 text-xs mb-1">Behavioural Fit</p>
-                    <p className={`font-medium ${match.behavioral_penalty > 10 ? 'text-[#d4a55a]' : 'text-[#4ade80]'}`}>
-                      {match.behavioral_penalty > 0 ? `-${match.behavioral_penalty}` : 'Aligned'}
-                    </p>
+                  <div className="w-full h-1 bg-gray-800 rounded-full overflow-hidden">
+                    <div
+                      className="h-full rounded-full"
+                      style={{ width: `${node.value}%`, backgroundColor: node.color }}
+                    />
                   </div>
                 </div>
-                <div className="p-3 bg-white/[0.02] rounded-lg">
-                  <p className="text-[white]/30 text-xs mb-2">Friction Level</p>
-                  <div className="flex items-center gap-3">
-                    <div className="flex-1 h-2 bg-white/[0.06] rounded-full overflow-hidden">
-                      <div 
-                        className="h-full rounded-full transition-all"
-                        style={{ 
-                          width: `${match.friction === 'LOW' ? 20 : match.friction === 'MODERATE' ? 40 : match.friction === 'HIGH' ? 60 : match.friction === 'VERY_HIGH' ? 80 : 100}%`,
-                          backgroundColor: friction.color
-                        }}
-                      />
-                    </div>
-                    <span className="text-[white]/50 text-xs">{friction.label}</span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'payoff' && (
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4 bg-white/[0.02] rounded-lg text-center">
-                    <p className="text-2xl font-bold text-[#4ade80] mb-1">
-                      {match.course.employment_rate ? `${match.course.employment_rate}%` : 'N/A'}
-                    </p>
-                    <p className="text-[white]/30 text-xs uppercase tracking-wider">Employment Rate</p>
-                  </div>
-                  <div className="p-4 bg-white/[0.02] rounded-lg text-center">
-                    <p className="text-2xl font-bold text-[#4ade80] mb-1">
-                      {match.course.median_salary_5yr 
-                        ? `£${(match.course.median_salary_5yr / 1000).toFixed(0)}k` 
-                        : 'N/A'}
-                    </p>
-                    <p className="text-[white]/30 text-xs uppercase tracking-wider">Salary (5yr)</p>
-                  </div>
-                </div>
-              </div>
-            )}
+              ))}
+            </div>
           </div>
 
-          {/* Actions */}
-          <div className="px-5 pb-5 flex gap-3">
-            <button className="flex-1 py-2.5 bg-[#6366f1] text-[#0a0a0f] rounded-xl text-sm font-semibold hover:bg-[#6366f1]/90 transition-colors">
-              Shortlist
-            </button>
-            <button className="flex-1 py-2.5 bg-white/[0.05] text-[white]/70 rounded-xl text-sm font-medium border border-white/[0.08] hover:border-[#6366f1]/30 hover:text-[#6366f1] transition-colors">
-              View on UCAS
-            </button>
+          <div className="w-full px-4 py-2 border-t border-white/5 bg-white/[0.02]">
+            <div className="flex justify-between items-center text-[10px] text-gray-500">
+              <span className="uppercase tracking-wider font-bold">Primary</span>
+              <span className="text-white font-mono">{topTraits[0]?.label} & {topTraits[1]?.label}</span>
+            </div>
           </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ClusterCard({ title, score, icon, color }: { title: string; score: number; icon: string; color: string }) {
+  return (
+    <div className="bg-[#1a1a24] rounded-xl p-5 border border-white/5 relative overflow-hidden group hover:border-white/10 transition-all">
+      <div className="absolute top-2 right-2 text-2xl opacity-20 group-hover:opacity-40 transition-opacity">
+        {icon}
+      </div>
+      <div className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-2">{title}</div>
+      <div className="flex items-end space-x-2">
+        <span className="text-3xl font-bold text-white">{score}%</span>
+        <span className="text-sm text-gray-500 mb-1">Affinity</span>
+      </div>
+      <div className="w-full bg-gray-800 h-1.5 mt-4 rounded-full overflow-hidden">
+        <div className="h-full rounded-full" style={{ width: `${score}%`, backgroundColor: color }}></div>
+      </div>
+    </div>
+  );
+}
+
+function CourseCard({ match, rank }: { match: MatchData; rank: number }) {
+  const course = match.bo_v1_courses;
+  if (!course) return null;
+
+  const scoreColor = match.score > 85 ? 'text-green-400' : match.score > 70 ? 'text-cyan-400' : 'text-indigo-400';
+
+  return (
+    <div className="bg-[#1a1a24] rounded-xl border border-white/5 p-5 hover:border-[#6366f1]/50 hover:-translate-y-1 transition-all duration-300 group cursor-pointer">
+      <div className="flex justify-between items-start mb-3">
+        <div className="flex items-center gap-2">
+          <span className="text-gray-600 text-sm font-mono">#{rank}</span>
+          {course.russell_group && (
+            <span className="bg-amber-500/10 text-amber-500 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider border border-amber-500/20">
+              Russell Group
+            </span>
+          )}
+        </div>
+        <div className={`font-bold text-lg ${scoreColor}`}>{match.score}% Match</div>
+      </div>
+
+      <h3 className="text-white font-bold text-lg mb-1 group-hover:text-[#6366f1] transition-colors">
+        {course.course_name}
+      </h3>
+      <p className="text-gray-400 text-sm mb-4">{course.university}</p>
+
+      {course.subject_area && (
+        <div className="flex flex-wrap gap-2 mb-4">
+          <span className="text-xs text-gray-500 bg-black/20 px-2 py-0.5 rounded border border-white/5">
+            {course.subject_area}
+          </span>
         </div>
       )}
-    </GlassCard>
-  );
-}
 
-// Supercurricular Card Component
-function SupercurricularCard({ item }: { item: Supercurricular }) {
-  const icon = TYPE_ICONS[item.type] || '📚';
-  
-  return (
-    <GlassCard className="p-4 hover:bg-white/[0.05] transition-colors" hover>
-      <a 
-        href={item.external_url || '#'} 
-        target="_blank" 
-        rel="noopener noreferrer"
-        className="block"
-      >
-        <div className="flex items-start gap-3">
-          <div className="w-10 h-10 rounded-lg bg-[#6366f1]/10 flex items-center justify-center flex-shrink-0">
-            <span className="text-lg">{icon}</span>
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-[#6366f1]/60 text-xs uppercase tracking-wider mb-1">{item.type.replace('_', ' ')}</p>
-            <h4 className="text-[white] text-sm font-medium leading-snug">{item.title}</h4>
-            {item.author && (
-              <p className="text-[white]/40 text-xs mt-1">{item.author}</p>
-            )}
-          </div>
-          <span className="text-[white]/20 text-sm">→</span>
-        </div>
-      </a>
-    </GlassCard>
+      <div className="flex justify-between items-center text-xs text-gray-500 border-t border-white/5 pt-3">
+        <span>Employment: {course.employment_rate || 'N/A'}%</span>
+        <span className="flex items-center text-[#6366f1] group-hover:translate-x-1 transition-transform">
+          View
+          <svg className="w-3 h-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </span>
+      </div>
+    </div>
   );
 }
 
@@ -708,23 +277,19 @@ function SupercurricularCard({ item }: { item: Supercurricular }) {
 export default function ResultsPage() {
   const params = useParams();
   const router = useRouter();
-  const sessionId = params.id as string;
+  const sessionId = params?.id as string;
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [profile, setProfile] = useState<ProfileData | null>(null);
-  const [session, setSession] = useState<SessionData | null>(null);
   const [matches, setMatches] = useState<MatchData[]>([]);
-  const [capacityResults, setCapacityResults] = useState<CapacityResults | null>(null);
-  const [supercurriculars, setSupercurriculars] = useState<Supercurricular[]>([]);
-  const [miniSampleResults, setMiniSampleResults] = useState<MiniSampleResponse[]>([]);
-  const [expandedCourse, setExpandedCourse] = useState<number | null>(null);
-  const [showAllCourses, setShowAllCourses] = useState(false);
-  const [pinnedCourses, setPinnedCourses] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchResults = async () => {
+      if (!sessionId) return;
+
       try {
+        // Fetch profile
         const { data: profileData, error: profileError } = await supabase
           .from('bo_v1_profiles')
           .select('*')
@@ -734,103 +299,54 @@ export default function ResultsPage() {
         if (profileError) throw profileError;
         setProfile(profileData);
 
-        const { data: sessionData } = await supabase
-          .from('bo_v1_sessions')
-          .select('benchmarks_completed, mini_samples_completed, scenarios_completed')
-          .eq('id', sessionId)
-          .single();
-        setSession(sessionData);
-
-        // Fetch mini-sample results for Early Indicators
-        const { data: miniSampleData } = await supabase
-          .from('bo_v1_mini_sample_responses')
-          .select(`
-            task_id,
-            score,
-            enjoyment_rating,
-            career_fit_rating,
-            bo_v1_mini_samples (meta_cluster, title)
-          `)
-          .eq('session_id', sessionId);
-        if (miniSampleData) {
-          // Transform the data to flatten the join result
-          const transformed = miniSampleData.map((item: any) => ({
-            task_id: item.task_id,
-            score: item.score,
-            enjoyment_rating: item.enjoyment_rating,
-            career_fit_rating: item.career_fit_rating,
-            bo_v1_mini_samples: Array.isArray(item.bo_v1_mini_samples)
-              ? item.bo_v1_mini_samples[0]
-              : item.bo_v1_mini_samples
-          }));
-          setMiniSampleResults(transformed);
-        }
-
-        const { data: capData } = await supabase
-          .from('bo_v1_capacity_results')
-          .select('vrb_items_completed, qnt_items_completed, spd_items_completed')
-          .eq('session_id', sessionId)
-          .single();
-        setCapacityResults(capData);
-
+        // Fetch matches with course details
         const { data: matchData, error: matchError } = await supabase
           .from('bo_v1_matches')
           .select(`
-            rank, score, friction, cognitive_score, behavioral_penalty, vibe_bonus,
-            course:bo_v1_courses(id, university, course_name, cah_code, nss_overall, employment_rate, median_salary_5yr, russell_group)
+            course_id,
+            score,
+            fit_score,
+            friction,
+            rank,
+            bo_v1_courses (
+              id,
+              course_name,
+              university,
+              russell_group,
+              employment_rate,
+              median_salary_3yr,
+              subject_area,
+              ucas_points
+            )
           `)
           .eq('session_id', sessionId)
-          .order('rank', { ascending: true })
+          .order('score', { ascending: false })
           .limit(20);
 
         if (matchError) throw matchError;
-        setMatches(matchData?.map(m => ({ ...m, course: m.course as any })) || []);
+        setMatches(matchData || []);
 
-        // Fetch supercurriculars based on top course clusters
-        if (matchData && matchData.length > 0) {
-          const topClusters = [...new Set(
-            matchData.slice(0, 5)
-              .map(m => CAH_TO_CLUSTER[(m.course as any)?.cah_code?.substring(0, 5)])
-              .filter(Boolean)
-          )].slice(0, 3);
-
-          if (topClusters.length > 0) {
-            const { data: superData } = await supabase
-              .from('bo_v1_supercurriculars')
-              .select('id, type, title, author, external_url, description')
-              .in('primary_cluster', topClusters)
-              .limit(6);
-            if (superData) setSupercurriculars(superData);
-          }
-        }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load');
       } finally {
         setLoading(false);
       }
     };
+
     fetchResults();
   }, [sessionId]);
-
-  const handleTakeBenchmark = () => {
-    router.push(`/assessment/capacity/full`);
-  };
-
-  const togglePin = (courseId: string) => {
-    setPinnedCourses(prev => 
-      prev.includes(courseId) 
-        ? prev.filter(id => id !== courseId)
-        : [...prev, courseId]
-    );
-  };
 
   // Loading state
   if (loading) {
     return (
       <main className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
-        <div className="text-center">
+        <div className="fixed inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-[-20%] right-[-10%] w-[60%] h-[60%] bg-[#6366f1]/10 blur-[120px] rounded-full"></div>
+          <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#06b6d4]/10 blur-[100px] rounded-full"></div>
+        </div>
+        <div className="relative z-10 text-center">
           <div className="w-8 h-8 border-2 border-[#6366f1]/30 border-t-[#6366f1] rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-[white]/40 text-sm">Loading your results...</p>
+          <p className="text-gray-400 text-sm">Loading your results...</p>
         </div>
       </main>
     );
@@ -840,322 +356,153 @@ export default function ResultsPage() {
   if (error || !profile) {
     return (
       <main className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
-        <GlassCard className="p-8 text-center max-w-sm">
-          <p className="text-[white]/60 mb-4">Results not found</p>
-          <a 
-            href="/" 
-            className="inline-block px-6 py-2 bg-[#6366f1] text-[#0a0a0f] rounded-lg font-medium hover:bg-[#6366f1]/90 transition-colors"
+        <div className="fixed inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-[-20%] right-[-10%] w-[60%] h-[60%] bg-[#6366f1]/10 blur-[120px] rounded-full"></div>
+        </div>
+        <div className="relative z-10 p-8 bg-[#1a1a24] border border-white/10 rounded-2xl text-center max-w-sm">
+          <p className="text-gray-400 mb-4">Results not found</p>
+          <a
+            href="/"
+            className="inline-block px-6 py-2 bg-[#6366f1] text-white rounded-lg font-medium hover:bg-[#6366f1]/90 transition-colors"
           >
             Start again
           </a>
-        </GlassCard>
+        </div>
       </main>
     );
   }
 
-  const familiar = getFamiliarById(profile.familiar_id as any);
-  const guild = getGuildById(profile.guild_id as any);
-  const confidence = calculateConfidenceGrade(session, capacityResults);
-  const level = profile.level || Math.floor((profile.total_xp || 0) / 1000) + 1;
-  const tutorMessage = generateTutorMessage(profile);
-  const displayedCourses = showAllCourses ? matches : matches.slice(0, 6);
-
-  const completedBenchmarks = {
-    vrb: (capacityResults?.vrb_items_completed || 0) >= 12,
-    qnt: (capacityResults?.qnt_items_completed || 0) >= 12,
-    spd: (capacityResults?.spd_items_completed || 0) >= 12,
+  // Calculate cluster scores from dispositions
+  const clusterScores = {
+    stem: Math.round((profile.precision + profile.calibration + profile.structure) / 3),
+    humanities: Math.round((profile.depth + profile.transfer + profile.receptivity) / 3),
+    analytical: Math.round((profile.calibration + profile.precision + profile.tolerance) / 3),
   };
-  const benchmarkCount = Object.values(completedBenchmarks).filter(Boolean).length;
+
+  const displayedCourses = matches.slice(0, 6);
 
   return (
     <main className="min-h-screen bg-[#0a0a0f]">
       {/* Background effects */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#6366f1]/5 rounded-full blur-[100px]" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-[#6366f1]/5 rounded-full blur-[100px]" />
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-[#06b6d4]/5 rounded-full blur-[100px]" />
       </div>
-      
-      {/* Nav */}
-      <nav className="relative z-10 flex justify-between items-center px-6 py-4 border-b border-white/[0.06]">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-[#6366f1]/20 flex items-center justify-center border border-[#6366f1]/30">
-            <span className="text-[#6366f1] font-bold text-sm">E</span>
+
+      {/* Header */}
+      <header className="relative z-10 h-16 border-b border-white/5 flex items-center justify-between px-6 lg:px-12 bg-[#1a1a24]/50 backdrop-blur-md sticky top-0">
+        <div className="flex items-center space-x-2 cursor-pointer" onClick={() => router.push('/')}>
+          <div className="w-8 h-8 bg-[#6366f1] rounded-md flex items-center justify-center font-bold italic transform -skew-x-12">
+            E
           </div>
-          <span className="text-[white] font-semibold">ExamRizz Arena</span>
+          <span className="font-bold text-xl tracking-wide text-white">EXAMRIZZ</span>
         </div>
-        <div className="flex items-center gap-6">
-          <button 
+        <nav className="hidden md:flex space-x-8 text-sm font-medium text-gray-400">
+          <button className="text-white border-b-2 border-[#6366f1] h-16 flex items-center">Dashboard</button>
+          <button className="hover:text-white transition-colors h-16 flex items-center">Matches</button>
+        </nav>
+        <div className="flex items-center space-x-4">
+          <button
             onClick={() => navigator.clipboard.writeText(window.location.href)}
-            className="text-[white]/50 hover:text-[#6366f1] text-sm transition-colors"
+            className="text-gray-400 hover:text-white text-sm transition-colors"
           >
-            Share Results
+            Share
           </button>
-          <a href="/" className="text-[white]/50 hover:text-[#6366f1] text-sm transition-colors">
-            New Assessment
-          </a>
         </div>
-      </nav>
+      </header>
 
-      {/* Main Grid */}
-      <div className="relative z-10 grid grid-cols-1 lg:grid-cols-[280px_1fr_280px] gap-6 p-6 max-w-[1600px] mx-auto">
-        
-        {/* ========== LEFT SIDEBAR ========== */}
-        <aside className="space-y-5 lg:sticky lg:top-6 lg:self-start">
-          
-          {/* Confidence Grade */}
-          <GlassCard className="p-5">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-[white]/40 text-xs uppercase tracking-wider">Match Confidence</span>
-              <div 
-                className="w-12 h-12 rounded-xl flex items-center justify-center text-xl font-bold"
-                style={{ backgroundColor: `${confidence.color}15`, color: confidence.color }}
-              >
-                {confidence.grade}
+      <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-6 lg:px-8 pt-8 pb-20 space-y-8">
+
+        {/* Profile Banner */}
+        <section>
+          <ProfileCard profile={profile} />
+        </section>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+          {/* Left Column: Stats & Indicators */}
+          <div className="lg:col-span-4 space-y-8">
+
+            {/* Sharpen Profile CTA */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between px-1">
+                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest flex items-center">
+                  <svg className="w-3 h-3 text-[#6366f1] mr-2" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                  Sharpen Profile
+                </h3>
+              </div>
+
+              <div className="bg-[#1a1a24] border border-white/5 rounded-xl p-4">
+                <p className="text-gray-400 text-sm mb-4">Complete additional activities to improve your profile accuracy.</p>
+                <button className="w-full py-2.5 bg-[#6366f1]/10 border border-[#6366f1]/30 text-[#6366f1] rounded-lg text-sm font-medium hover:bg-[#6366f1]/20 transition-colors">
+                  Take Capacity Benchmarks
+                </button>
               </div>
             </div>
-            <div className="h-2 bg-white/[0.06] rounded-full overflow-hidden mb-3">
-              <div 
-                className="h-full rounded-full transition-all duration-700"
-                style={{ width: `${confidence.percentage}%`, backgroundColor: confidence.color }}
-              />
-            </div>
-            <p className="text-[white]/40 text-xs mb-4">{confidence.message}</p>
-            {confidence.grade !== 'A' && (
-              <button
-                onClick={handleTakeBenchmark}
-                className="w-full py-2.5 text-[#6366f1] text-sm font-medium border border-[#6366f1]/30 rounded-xl hover:bg-[#6366f1]/10 transition-colors"
-              >
-                Improve Grade
-              </button>
-            )}
-          </GlassCard>
 
-          {/* Profile Card - with locked state at low precision */}
-          <GlassCard className="p-5">
-            <div className="flex flex-col items-center text-center">
-              {(profile.precision_score || 40) >= 70 ? (
-                <>
-                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#6366f1]/20 to-[#6366f1]/5 border border-[#6366f1]/20 flex items-center justify-center mb-4">
-                    <span className="text-4xl">🎓</span>
-                  </div>
-                  <h3 className="text-[white] font-semibold text-lg">{familiar?.name || 'Scholar'}</h3>
-                  <p className="text-[#6366f1]/60 text-sm mt-1">{familiar?.tagline || 'Knowledge Seeker'}</p>
-                  <div className="mt-4 px-3 py-1.5 bg-[#6366f1]/10 rounded-full border border-[#6366f1]/20">
-                    <span className="text-[#6366f1] text-xs font-medium">Level {level}</span>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="w-20 h-20 rounded-2xl bg-white/[0.03] border border-white/[0.08] flex items-center justify-center mb-4 relative">
-                    <span className="text-4xl opacity-30 blur-sm">🎓</span>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="text-2xl">🔒</span>
-                    </div>
-                  </div>
-                  <h3 className="text-[white]/50 font-semibold text-lg">Familiar Locked</h3>
-                  <p className="text-[white]/30 text-sm mt-1">Reach 70% precision to unlock</p>
-                  <div className="mt-4 px-3 py-1.5 bg-white/[0.03] rounded-full border border-white/[0.08]">
-                    <span className="text-[white]/30 text-xs font-medium">{profile.precision_score || 40}% precision</span>
-                  </div>
-                </>
-              )}
-            </div>
-          </GlassCard>
-
-          {/* Benchmarks Progress */}
-          <GlassCard className="p-5">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-[white]/40 text-xs uppercase tracking-wider">Benchmarks</span>
-              <span className="text-[#6366f1] text-sm font-medium">{benchmarkCount}/3</span>
-            </div>
-            <div className="space-y-2">
-              {[
-                { id: 'vrb', label: 'Verbal', done: completedBenchmarks.vrb },
-                { id: 'qnt', label: 'Quantitative', done: completedBenchmarks.qnt },
-                { id: 'spd', label: 'Processing Speed', done: completedBenchmarks.spd },
-              ].map((b) => (
-                <div 
-                  key={b.id}
-                  className={`flex items-center justify-between py-2.5 px-3 rounded-lg transition-colors ${
-                    b.done ? 'bg-[#6366f1]/10 border border-[#6366f1]/20' : 'bg-white/[0.02]'
-                  }`}
-                >
-                  <span className={`text-sm ${b.done ? 'text-[#6366f1]' : 'text-[white]/40'}`}>
-                    {b.label}
-                  </span>
-                  {b.done ? (
-                    <span className="text-[#4ade80] text-sm">✓</span>
-                  ) : (
-                    <span className="text-[white]/20 text-xs">Pending</span>
-                  )}
-                </div>
-              ))}
-            </div>
-          </GlassCard>
-
-          {/* Sharpening CTAs */}
-          <SharpeningCTAs precisionScore={profile.precision_score || 40} />
-        </aside>
-
-        {/* ========== MAIN CONTENT ========== */}
-        <div className="space-y-6">
-          
-          {/* Constellation + Tutor Message */}
-          <GlassCard className="p-6">
-            <p className="text-[#6366f1]/60 text-xs uppercase tracking-wider mb-2">Disposition Profile</p>
-            <h2 className="text-2xl text-[white] font-light mb-6">
-              The <span className="text-[#6366f1] font-medium">{guild?.name?.replace('The ', '') || 'Scholar'}</span>
-            </h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-              <ConstellationMap profile={profile} />
-              <div className="space-y-4">
-                {DISPOSITION_CONFIG.map((d) => (
-                  <div key={d.key}>
-                    <div className="flex justify-between text-xs mb-1.5">
-                      <span className="text-[white]/60">{d.label}</span>
-                      <span className="text-[#6366f1]">{(profile as any)[d.key]}</span>
-                    </div>
-                    <div className="h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-[#6366f1] rounded-full transition-all duration-500"
-                        style={{ width: `${(profile as any)[d.key]}%` }}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </GlassCard>
-
-          {/* Tutor Message */}
-          <TutorMessage message={tutorMessage} />
-
-          {/* Early Indicators from Mini-Samples */}
-          <EarlyIndicators miniSampleResults={miniSampleResults} />
-
-          {/* Course Matches */}
-          <div>
-            <div className="flex items-center justify-between mb-4 px-1">
-              <div>
-                <h2 className="text-[white] font-semibold text-lg">Course Matches</h2>
-                <p className="text-[white]/40 text-sm mt-0.5">{matches.length} courses matched to your profile</p>
-              </div>
-            </div>
-            
+            {/* Early Indicators */}
             <div className="space-y-4">
-              {displayedCourses.map((match, idx) => (
-                <CourseCard
-                  key={match.course.id}
-                  match={match}
-                  isExpanded={expandedCourse === idx}
-                  onToggle={() => setExpandedCourse(expandedCourse === idx ? null : idx)}
-                  isPinned={pinnedCourses.includes(match.course.id)}
-                  onTogglePin={() => togglePin(match.course.id)}
+              <h3 className="text-lg font-bold flex items-center text-gray-200">
+                <svg className="w-5 h-5 mr-2 text-[#6366f1]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+                Early Indicators
+              </h3>
+              <div className="grid grid-cols-1 gap-4">
+                <ClusterCard
+                  title="STEM Analysis"
+                  score={clusterScores.stem}
+                  icon="🔬"
+                  color="#22d3ee"
                 />
-              ))}
+                <ClusterCard
+                  title="Humanities"
+                  score={clusterScores.humanities}
+                  icon="📚"
+                  color="#a855f7"
+                />
+                <ClusterCard
+                  title="Analytical"
+                  score={clusterScores.analytical}
+                  icon="🧠"
+                  color="#f472b6"
+                />
+              </div>
             </div>
-
-            {matches.length > 6 && (
-              <button
-                onClick={() => setShowAllCourses(!showAllCourses)}
-                className="mt-5 w-full py-3 text-[#6366f1] text-sm font-medium border border-[#6366f1]/20 rounded-xl hover:bg-[#6366f1]/5 transition-colors"
-              >
-                {showAllCourses ? 'Show fewer courses' : `Show ${matches.length - 6} more courses`}
-              </button>
-            )}
           </div>
 
-          {/* Supercurriculars */}
-          {supercurriculars.length > 0 && (
-            <div>
-              <div className="mb-4 px-1">
-                <h2 className="text-[white] font-semibold text-lg">Recommended Activities</h2>
-                <p className="text-[white]/40 text-sm mt-0.5">Build your application with these resources</p>
+          {/* Right Column: Course Matches */}
+          <div className="lg:col-span-8 space-y-10">
+            <section>
+              <div className="flex justify-between items-center mb-6">
+                <div>
+                  <h2 className="text-2xl font-bold text-white">Top Course Matches</h2>
+                  <p className="text-gray-400 text-sm">Based on your cognitive profile and learning style.</p>
+                </div>
+                <button className="text-[#6366f1] text-sm font-medium flex items-center hover:underline">
+                  See All
+                  <svg className="w-4 h-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {supercurriculars.map((item) => (
-                  <SupercurricularCard key={item.id} item={item} />
-                ))}
-              </div>
-            </div>
-          )}
+
+              {matches.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {displayedCourses.map((match, index) => (
+                    <CourseCard key={match.course_id} match={match} rank={index + 1} />
+                  ))}
+                </div>
+              ) : (
+                <div className="bg-[#1a1a24] border border-white/5 rounded-xl p-8 text-center">
+                  <p className="text-gray-400">No course matches found. Complete more of the assessment for personalized recommendations.</p>
+                </div>
+              )}
+            </section>
+          </div>
         </div>
-
-        {/* ========== RIGHT SIDEBAR ========== */}
-        <aside className="space-y-5 lg:sticky lg:top-6 lg:self-start">
-          
-          {/* Pinned Courses */}
-          <GlassCard className="p-5">
-            <p className="text-[white]/40 text-xs uppercase tracking-wider mb-4">Pinned Courses</p>
-            {pinnedCourses.length > 0 ? (
-              <div className="space-y-3">
-                {matches
-                  .filter(m => pinnedCourses.includes(m.course.id))
-                  .map(m => (
-                    <div 
-                      key={m.course.id}
-                      className="p-3 bg-white/[0.03] rounded-lg border border-white/[0.06]"
-                    >
-                      <p className="text-[white] text-sm font-medium truncate">{m.course.course_name}</p>
-                      <p className="text-[#6366f1]/50 text-xs truncate mt-1">{m.course.university}</p>
-                    </div>
-                  ))
-                }
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <p className="text-[white]/20 text-sm">Star courses to pin them here</p>
-              </div>
-            )}
-          </GlassCard>
-
-          {/* Top 3 Matches */}
-          <GlassCard className="p-5">
-            <p className="text-[white]/40 text-xs uppercase tracking-wider mb-4">Top Matches</p>
-            <div className="space-y-3">
-              {matches.slice(0, 3).map((m, i) => {
-                const friction = FRICTION_LABELS[m.friction] || FRICTION_LABELS.MODERATE;
-                return (
-                  <div 
-                    key={m.course.id}
-                    className="flex items-center gap-3 p-3 bg-white/[0.02] rounded-lg"
-                  >
-                    <span 
-                      className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold"
-                      style={{ backgroundColor: `${friction.color}20`, color: friction.color }}
-                    >
-                      {i + 1}
-                    </span>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[white]/80 text-sm font-medium truncate">{m.course.course_name}</p>
-                      <p className="text-[white]/30 text-xs truncate">{m.course.university}</p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </GlassCard>
-
-          {/* Quick Actions */}
-          <GlassCard className="p-5">
-            <p className="text-[white]/40 text-xs uppercase tracking-wider mb-4">Actions</p>
-            <div className="space-y-2">
-              <button 
-                onClick={() => navigator.clipboard.writeText(window.location.href)}
-                className="w-full py-2.5 text-[white]/60 text-sm bg-white/[0.03] rounded-lg hover:bg-white/[0.06] transition-colors text-left px-4"
-              >
-                📋 Copy results link
-              </button>
-              <button className="w-full py-2.5 text-[white]/60 text-sm bg-white/[0.03] rounded-lg hover:bg-white/[0.06] transition-colors text-left px-4">
-                📄 Export as PDF
-              </button>
-              <button className="w-full py-2.5 text-[white]/60 text-sm bg-white/[0.03] rounded-lg hover:bg-white/[0.06] transition-colors text-left px-4">
-                🔄 Retake assessment
-              </button>
-            </div>
-          </GlassCard>
-        </aside>
       </div>
     </main>
   );

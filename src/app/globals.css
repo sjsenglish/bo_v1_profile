@@ -28,31 +28,32 @@
   }
 
   body {
-    @apply bg-[#011c40] text-[#a7ebf2] antialiased;
+    @apply bg-[#0B0F19] text-[#F3F4F6] antialiased;
     font-family: 'Inter', system-ui, sans-serif;
     overflow-x: hidden;
   }
 
   /* Selection */
   ::selection {
-    @apply bg-[#54acbf] text-[#011c40];
+    @apply bg-primary/30 text-white;
   }
 
   /* Scrollbar Styling */
   ::-webkit-scrollbar {
-    @apply w-2;
+    width: 8px;
   }
 
   ::-webkit-scrollbar-track {
-    @apply bg-[#011c40];
+    background: #0B0F19;
   }
 
   ::-webkit-scrollbar-thumb {
-    @apply bg-[#26658c] rounded-full;
+    background: #374151;
+    border-radius: 4px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    @apply bg-[#54acbf];
+    background: #4B5563;
   }
 
   /* Focus Visible */
