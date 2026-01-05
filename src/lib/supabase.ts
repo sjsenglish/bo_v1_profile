@@ -5,12 +5,7 @@ import { createServerClient } from '@supabase/ssr';
 export function createClient() {
   return createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        domain: '.examrizz.com', // Share cookies across subdomains
-      },
-    }
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
 }
 
@@ -50,12 +45,7 @@ export const supabase = new Proxy({} as ReturnType<typeof createBrowserClient>, 
     if (!_supabase) {
       _supabase = createBrowserClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-        {
-          cookies: {
-            domain: '.examrizz.com',
-          },
-        }
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
       );
     }
     return (_supabase as any)[prop];
