@@ -481,12 +481,20 @@ export default function ResultsPage() {
                   <h2 className="text-2xl font-bold text-white">Top Course Matches</h2>
                   <p className="text-gray-400 text-sm">Based on your cognitive profile and learning style.</p>
                 </div>
-                <button className="text-[#6366f1] text-sm font-medium flex items-center hover:underline">
-                  See All
-                  <svg className="w-4 h-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
+                <div className="flex items-center gap-3">
+                  <a
+                    href="https://examrizz.com"
+                    className="px-6 py-2 bg-[#6366f1] text-white text-sm font-medium rounded-full hover:bg-[#5558e3] transition-colors"
+                  >
+                    Return to Home
+                  </a>
+                  <button className="text-[#6366f1] text-sm font-medium flex items-center hover:underline">
+                    See All
+                    <svg className="w-4 h-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                </div>
               </div>
 
               {matches.length > 0 ? (
