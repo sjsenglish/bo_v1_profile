@@ -8,21 +8,25 @@
 -- Sessions (assessment state tracking)
 CREATE TABLE IF NOT EXISTS bo_v1_sessions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   completed_at TIMESTAMPTZ,
-  
+
   -- Progress flags
   vibe_completed BOOLEAN DEFAULT FALSE,
   vibe_skipped BOOLEAN DEFAULT FALSE,
   cognitive_completed BOOLEAN DEFAULT FALSE,
   behavioral_completed BOOLEAN DEFAULT FALSE,
   behavioral_skipped BOOLEAN DEFAULT FALSE,
-  
+
   -- Counts
   questions_answered INTEGER DEFAULT 0,
   questions_skipped INTEGER DEFAULT 0,
   benchmarks_completed INTEGER DEFAULT 0
 );
+
+-- Index for user_id lookups
+CREATE INDEX IF NOT EXISTS idx_bo_v1_sessions_user_id ON bo_v1_sessions(user_id);
 
 -- Profiles (computed student characteristics)
 CREATE TABLE IF NOT EXISTS bo_v1_profiles (
@@ -335,14 +339,32 @@ ALTER TABLE bo_v1_guilds ENABLE ROW LEVEL SECURITY;
 ALTER TABLE bo_v1_quests ENABLE ROW LEVEL SECURITY;
 ALTER TABLE bo_v1_feed_items ENABLE ROW LEVEL SECURITY;
 
--- Allow anonymous access for assessment flow
-CREATE POLICY "Allow anonymous insert" ON bo_v1_sessions FOR INSERT WITH CHECK (true);
-CREATE POLICY "Allow anonymous select" ON bo_v1_sessions FOR SELECT USING (true);
-CREATE POLICY "Allow anonymous update" ON bo_v1_sessions FOR UPDATE USING (true);
+-- Allow access for both anonymous and authenticated users
+CREATE POLICY "Allow insert for authenticated and anonymous" ON bo_v1_sessions FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow select for own sessions" ON bo_v1_sessions FOR SELECT USING (user_id IS NULL OR user_id = auth.uid());
+CREATE POLICY "Allow update for own sessions" ON bo_v1_sessions FOR UPDATE USING (user_id IS NULL OR user_id = auth.uid());
 
-CREATE POLICY "Allow anonymous insert" ON bo_v1_profiles FOR INSERT WITH CHECK (true);
-CREATE POLICY "Allow anonymous select" ON bo_v1_profiles FOR SELECT USING (true);
-CREATE POLICY "Allow anonymous update" ON bo_v1_profiles FOR UPDATE USING (true);
+CREATE POLICY "Allow insert for own profiles" ON bo_v1_profiles FOR INSERT WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM bo_v1_sessions
+    WHERE bo_v1_sessions.id = bo_v1_profiles.session_id
+    AND (bo_v1_sessions.user_id IS NULL OR bo_v1_sessions.user_id = auth.uid())
+  )
+);
+CREATE POLICY "Allow select for own profiles" ON bo_v1_profiles FOR SELECT USING (
+  EXISTS (
+    SELECT 1 FROM bo_v1_sessions
+    WHERE bo_v1_sessions.id = bo_v1_profiles.session_id
+    AND (bo_v1_sessions.user_id IS NULL OR bo_v1_sessions.user_id = auth.uid())
+  )
+);
+CREATE POLICY "Allow update for own profiles" ON bo_v1_profiles FOR UPDATE USING (
+  EXISTS (
+    SELECT 1 FROM bo_v1_sessions
+    WHERE bo_v1_sessions.id = bo_v1_profiles.session_id
+    AND (bo_v1_sessions.user_id IS NULL OR bo_v1_sessions.user_id = auth.uid())
+  )
+);
 
 CREATE POLICY "Allow anonymous insert" ON bo_v1_vibe_swipes FOR INSERT WITH CHECK (true);
 CREATE POLICY "Allow anonymous select" ON bo_v1_vibe_swipes FOR SELECT USING (true);
