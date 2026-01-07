@@ -113,6 +113,19 @@ export default function ScenariosPage() {
         <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#06b6d4]/10 blur-[100px] rounded-full"></div>
       </div>
 
+      {/* Skip Section Button - Top Right */}
+      <div className="absolute top-6 right-6 z-50">
+        <button
+          onClick={handleSkipSection}
+          className="text-gray-400 hover:text-white text-sm font-medium tracking-wide flex items-center transition-colors group px-4 py-2 rounded-full hover:bg-white/5 bg-black/20 backdrop-blur-sm border border-white/10"
+        >
+          Skip Section
+          <svg className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+          </svg>
+        </button>
+      </div>
+
       <div className="w-full max-w-2xl mx-auto px-6 flex flex-col min-h-[600px] justify-center relative z-10">
         {/* Header Info */}
         <div className="flex justify-between items-end mb-8">
@@ -255,17 +268,6 @@ export default function ScenariosPage() {
             Next
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-            </svg>
-          </button>
-
-          {/* Skip Section Button */}
-          <button
-            onClick={handleSkipSection}
-            className="text-gray-500 hover:text-white text-sm font-medium tracking-wide flex items-center transition-colors group px-6 py-2 rounded-full hover:bg-white/5"
-          >
-            Skip this section
-            <svg className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
             </svg>
           </button>
         </div>

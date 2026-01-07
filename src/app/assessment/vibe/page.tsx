@@ -189,19 +189,6 @@ export default function VibeSwiperPage() {
 
           {renderCard('B')}
         </div>
-
-        {/* Footer Controls */}
-        <div className="flex justify-center mt-8">
-          <button
-            onClick={handleSkip}
-            className="text-gray-500 hover:text-white text-sm font-medium tracking-wide flex items-center transition-colors group px-6 py-3 rounded-full hover:bg-white/5"
-          >
-            Not sure? Skip this one
-            <svg className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-        </div>
       </div>
     </div>
   );

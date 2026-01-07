@@ -40,22 +40,24 @@ const VibeSwiper: React.FC<VibeSwiperProps> = ({ pairs, onComplete }) => {
             whileTap={{ scale: 0.98 }}
             onClick={onClick}
         >
-            {/* Background Image */}
+            {/* Background Image with blur and vignette */}
             <div className="absolute inset-0">
                 <img
                     src={option.image}
                     alt={option.label}
-                    className="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity duration-300"
+                    className="w-full h-full object-cover opacity-30 group-hover:opacity-40 blur-sm group-hover:blur-md transition-all duration-300"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
+                {/* Strong vignette overlay */}
+                <div className="absolute inset-0 bg-gradient-to-br from-black/80 via-black/70 to-black/80"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/50"></div>
             </div>
 
-            {/* Content */}
-            <div className="absolute bottom-0 left-0 w-full p-6 text-left">
-                <h3 className="text-2xl font-display font-bold text-white mb-1 group-hover:text-primary transition-colors">{option.label}</h3>
-                <p className="text-gray-400 text-sm">{option.description}</p>
-                <div className="mt-4 opacity-0 group-hover:opacity-100 transition-opacity transform translate-y-2 group-hover:translate-y-0">
-                    <span className="inline-block px-4 py-2 bg-primary/20 border border-primary text-primary text-xs font-bold rounded-full uppercase tracking-widest">
+            {/* Content - centered and prominent */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center">
+                <h3 className="text-3xl md:text-4xl font-display font-bold text-white mb-3 group-hover:text-primary transition-colors drop-shadow-lg">{option.label}</h3>
+                <p className="text-gray-300 text-base md:text-lg max-w-md drop-shadow-md">{option.description}</p>
+                <div className="mt-6 opacity-0 group-hover:opacity-100 transition-opacity transform translate-y-2 group-hover:translate-y-0">
+                    <span className="inline-block px-6 py-3 bg-primary/20 border border-primary text-primary text-sm font-bold rounded-full uppercase tracking-widest shadow-lg">
                         Tap to Select
                     </span>
                 </div>
