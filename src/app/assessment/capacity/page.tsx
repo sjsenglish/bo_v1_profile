@@ -251,7 +251,7 @@ export default function CapacityIntroPage() {
           <div className="text-4xl mb-4">✨</div>
           <h2 className="text-2xl text-white mb-4">Intro Complete</h2>
           <p className="text-gray-400 mb-6">
-            You've completed the capacity preview. Your results now include preliminary cognitive scores.
+            You've completed the preview. Your results now include preliminary scores.
           </p>
           <div className="bg-[#6366f1]/10 border border-[#6366f1]/30 rounded-xl p-4 mb-6">
             <p className="text-[#6366f1] text-sm">

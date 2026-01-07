@@ -12,13 +12,12 @@ import { rankCoursesAsync } from '@/lib/matching';
 import { Course, Scenario, ScenarioResponse, VibeChoice, Disposition } from '@/lib/types';
 
 const LOADING_MESSAGES = [
-  'Analysing your responses...',
-  'Building your cognitive profile...',
-  'Mapping learning patterns...',
-  'Calculating capacities...',
-  'Scanning 28,520 UK courses...',
-  'Ranking your matches...',
-  'Finalising results...',
+  'Reviewing your answers...',
+  'Building your profile...',
+  'Understanding your preferences...',
+  'Searching UK courses...',
+  'Finding your best matches...',
+  'Almost there...',
 ];
 
 export default function ProcessingPage() {

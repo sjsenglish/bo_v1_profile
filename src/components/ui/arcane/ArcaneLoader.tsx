@@ -15,8 +15,8 @@ interface ArcaneLoaderProps {
 }
 
 export const ArcaneLoader: React.FC<ArcaneLoaderProps> = ({ 
-  title = 'Synthesizing Aether',
-  subtitle = 'Calculating resonance frequencies...',
+  title = 'Loading',
+  subtitle = 'Just a moment...',
   size = 'md'
 }) => {
   const sizeStyles = {

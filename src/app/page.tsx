@@ -44,8 +44,8 @@ export default function App() {
   useEffect(() => {
     if (stage === AppStage.PROCESSING) {
       const timers = [
-        setTimeout(() => setLoadingText("Calculating cognitive affinities..."), 1500),
-        setTimeout(() => setLoadingText("Matching with 28,520 courses..."), 3000),
+        setTimeout(() => setLoadingText("Building your profile..."), 1500),
+        setTimeout(() => setLoadingText("Finding your matches..."), 3000),
         setTimeout(() => setStage(AppStage.DASHBOARD), 4500)
       ];
       return () => timers.forEach(clearTimeout);
@@ -149,9 +149,9 @@ export default function App() {
 
           <div className="mt-24 grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl w-full text-left">
             {[
-              { step: "01", title: "Complete Profile", desc: "Psychometric assessment takes ~6 minutes." },
-              { step: "02", title: "Unlock Archetype", desc: "Discover your cognitive strengths & style." },
-              { step: "03", title: "Get Matched", desc: "Instantly compare 28,000+ UK courses." }
+              { step: "01", title: "Complete Profile", desc: "Quick assessment takes ~6 minutes." },
+              { step: "02", title: "Unlock Archetype", desc: "Discover your learning strengths & style." },
+              { step: "03", title: "Get Matched", desc: "Compare thousands of UK courses." }
             ].map((item, i) => (
               <motion.div
                 key={i}

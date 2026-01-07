@@ -244,7 +244,7 @@ export default function ResultsPage() {
             
             <div className="space-y-4 text-gray-300 text-sm mb-6">
               <p>
-                This assessment is currently in <span className="text-[#6366f1] font-semibold">beta testing</span>. Your results are based on our evolving matching algorithm and should be used as indicative guidance rather than definitive recommendations.
+                This assessment is currently in <span className="text-[#6366f1] font-semibold">beta testing</span>. Your results are based on our matching system and should be used as guidance rather than definitive recommendations.
               </p>
               <p>
                 We're continuously improving the accuracy and relevance of course matches. Results may not reflect the full complexity of university admissions requirements or your complete academic profile.
