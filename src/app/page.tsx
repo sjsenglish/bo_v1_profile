@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { saveState, clearState } from '@/lib/assessment'; // Keep existing utility usage
+import { saveState, clearState, getInitialState, getStageUrl } from '@/lib/assessment'; // Keep existing utility usage
 import { AppStage, UserProfile, CareerPath, UniversityCourse, Scenario, VibePair, Task } from '../components/uioverhaul/types';
 import Button from '../components/uioverhaul/Button';
 import VibeSwiper from '../components/uioverhaul/VibeSwiper';
@@ -27,6 +27,18 @@ export default function App() {
   // Task State
   const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
   const [showEnjoyment, setShowEnjoyment] = useState(false);
+
+  // Check if there's an active session and redirect to appropriate assessment stage
+  useEffect(() => {
+    const state = getInitialState();
+    if (state.sessionId && stage === AppStage.LANDING) {
+      // User has an active session, route them to the correct assessment page
+      const stageUrl = getStageUrl(state.stage);
+      if (stageUrl !== '/') {
+        router.push(stageUrl);
+      }
+    }
+  }, [router, stage]);
 
   // Processing Animation Effect
   useEffect(() => {
@@ -112,10 +124,7 @@ export default function App() {
           <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-accent/10 blur-[100px] rounded-full"></div>
         </div>
 
-        <nav className="relative z-10 flex justify-between items-center p-6 lg:px-12">
-          <div className="text-2xl font-display font-bold italic tracking-wider">EXAMRIZZ</div>
-          <Button variant="secondary" size="sm" onClick={() => setStage(AppStage.DASHBOARD)}>Demo Dashboard</Button>
-        </nav>
+
 
         <main className="relative z-10 flex flex-col items-center justify-center text-center mt-12 lg:mt-20 px-4">
           <motion.div
@@ -123,15 +132,10 @@ export default function App() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <div className="inline-block px-3 py-1 mb-6 border border-white/10 rounded-full bg-white/5 text-xs tracking-widest uppercase text-indigo-300">
-              Official HESA Data • Russell Group Optimised
-            </div>
-            <h1 className="text-5xl lg:text-7xl font-display font-bold leading-tight mb-6 drop-shadow-2xl">
+            <h1 className="text-3xl lg:text-5xl font-display font-bold leading-tight mb-6 drop-shadow-2xl">
               Find where you'll <span className="text-transparent bg-clip-text bg-gradient-to-r from-primaryGlow to-accent">thrive</span>, not just survive.
             </h1>
-            <p className="text-lg text-gray-400 max-w-2xl mx-auto mb-10 leading-relaxed">
-              AI-powered university matching based on your cognitive capacity, learning dispositions, and true potential.
-            </p>
+
             <Button
               size="lg"
               variant="primary"
@@ -188,8 +192,14 @@ export default function App() {
       if (currentScenarioIndex < SCENARIOS.length - 1) {
         setCurrentScenarioIndex(prev => prev + 1);
       } else {
-        setStage(AppStage.ASSESSMENT_TASKS);
+        // Route to actual mini-samples page instead of local state
+        router.push('/assessment/mini-samples');
       }
+    };
+
+    const handleSkipScenarios = () => {
+      // Route to actual mini-samples page instead of local state
+      router.push('/assessment/mini-samples');
     };
 
     return (
@@ -199,7 +209,7 @@ export default function App() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setStage(AppStage.ASSESSMENT_TASKS)}
+            onClick={handleSkipScenarios}
             className="text-gray-400 hover:text-white group bg-surface/50 backdrop-blur-sm border border-white/5 rounded-full px-4"
           >
             Skip Section <SkipForward size={16} className="ml-2 group-hover:translate-x-1 transition-transform" />
@@ -217,43 +227,16 @@ export default function App() {
   }
 
   // View: Assessment Stage 3 (Timed Tasks)
+  // NOTE: This stage should redirect to /assessment/mini-samples in the actual flow
   if (stage === AppStage.ASSESSMENT_TASKS) {
-    const handleTaskComplete = () => {
-      setShowEnjoyment(true);
-    };
-
-    const handleEnjoymentComplete = () => {
-      setShowEnjoyment(false);
-
-      if (currentTaskIndex < TASKS.length - 1) {
-        setCurrentTaskIndex(prev => prev + 1);
-      } else {
-        setStage(AppStage.PROCESSING);
-      }
-    };
-
-    const handleTaskSkip = () => {
-      // Skip current task without enjoyment rating
-      setShowEnjoyment(false);
-      if (currentTaskIndex < TASKS.length - 1) {
-        setCurrentTaskIndex(prev => prev + 1);
-      } else {
-        setStage(AppStage.PROCESSING);
-      }
-    };
+    // Redirect to actual mini-samples page
+    useEffect(() => {
+      router.push('/assessment/mini-samples');
+    }, [router]);
 
     return (
-      <div className="relative w-full h-full min-h-screen bg-background text-white">
-        <AssessmentTask
-          task={TASKS[currentTaskIndex]}
-          currentTaskIndex={currentTaskIndex}
-          totalTasks={TASKS.length}
-          onComplete={handleTaskComplete}
-          onSkip={handleTaskSkip}
-        />
-        {showEnjoyment && (
-          <EnjoymentModal onContinue={handleEnjoymentComplete} />
-        )}
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-white">Redirecting to tasks...</div>
       </div>
     );
   }
